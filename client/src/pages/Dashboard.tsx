@@ -128,7 +128,7 @@ export default function Dashboard() {
               ),
             },
             {
-              label: 'Boutique',
+              label: t('dashboard.shop'),
               path: '/shop',
               icon: (
                 <svg width="68" height="68" viewBox="0 0 100 100" fill="none">

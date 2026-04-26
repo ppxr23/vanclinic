@@ -97,6 +97,7 @@ export const translations = {
       prescriptionReceived: 'Ordonnance reçue',
       week: 'semaine',
       day: 'jour',
+      shop: 'Boutique',
     },
 
     // Appointments
@@ -345,6 +346,7 @@ export const translations = {
       prescriptionReceived: 'Noraisina ny ordinansy',
       week: 'herinandro',
       day: 'andro',
+      shop: 'Fivarotana',
     },
 
     // Appointments
