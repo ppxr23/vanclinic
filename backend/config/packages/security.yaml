@@ -1,0 +1,79 @@
+security:
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        App\Entity\User:
+            algorithm: auto
+
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        # API Documentation - publique
+        api_doc:
+            pattern: ^/api/doc
+            security: false
+
+        # Endpoint d'authentification (login)
+        login:
+            pattern: ^/api/auth/login
+            stateless: true
+            json_login:
+                check_path: /api/auth/login
+                username_path: email
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        # Endpoints publics (inscription, reset password, etc.)
+        public:
+            pattern: ^/api/(auth/register|auth/forgot-password|auth/reset-password|public)
+            stateless: true
+            security: false
+
+        # API protégée par JWT
+        api:
+            pattern: ^/api
+            stateless: true
+            jwt: ~
+
+    # Contrôle d'accès basé sur les rôles
+    access_control:
+        - { path: ^/api/doc, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/api/public, roles: PUBLIC_ACCESS }
+        - { path: ^/api/admin, roles: [ROLE_COORDINATEUR, ROLE_OPHTALMOLOGUE, ROLE_TECHNICIEN, ROLE_AGENT_RELAIS] }
+        - { path: ^/api/medical, roles: [ROLE_OPHTALMOLOGUE, ROLE_COORDINATEUR] }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+
+    # Hiérarchie des rôles selon le cahier des charges
+    role_hierarchy:
+        ROLE_PATIENT:        ROLE_USER
+        ROLE_AGENT_RELAIS:   ROLE_USER
+        ROLE_TECHNICIEN:     ROLE_USER
+        ROLE_OPHTALMOLOGUE:  [ROLE_USER, ROLE_AGENT_RELAIS]
+        ROLE_COORDINATEUR:   [ROLE_USER, ROLE_AGENT_RELAIS, ROLE_TECHNICIEN, ROLE_OPHTALMOLOGUE, ROLE_ADMIN]
+
+when@test:
+    security:
+        password_hashers:
+            # By default, password hashers are resource intensive and take time. This is
+            # important to generate secure password hashes. In tests however, secure hashes
+            # are not important, waste resources and increase test times. The following
+            # reduces the work factor to the lowest possible values.
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4 # Lowest possible value for bcrypt
+                time_cost: 3 # Lowest possible value for argon
+                memory_cost: 10 # Lowest possible value for argon

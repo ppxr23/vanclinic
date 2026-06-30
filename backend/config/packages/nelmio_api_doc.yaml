@@ -1,0 +1,47 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: VanClinic API
+            description: |
+                API REST pour la plateforme e-santé VanClinic.
+                
+                Plateforme couplée à une clinique mobile ophtalmologique pour les zones rurales de Madagascar.
+                
+                **Modules disponibles :**
+                - Gestion des comptes utilisateurs (Patients, Agents Relais, Ophtalmologues, Techniciens, Coordinateurs)
+                - Gestion des rendez-vous
+                - Dossiers Médicaux Électroniques (DME)
+                - Téléexpertise
+                - Boutique en ligne (lunettes, lentilles, accessoires)
+                - Paiement (Mobile Money, Carte bancaire)
+                - Notifications (SMS, Email)
+                - Tableau de bord & Reporting
+            version: 1.0.0
+            contact:
+                name: Équipe VanClinic
+                email: dev@vanclinic.mg
+        components:
+            securitySchemes:
+                Bearer:
+                    type: http
+                    scheme: bearer
+                    bearerFormat: JWT
+                    description: 'Entrez votre token JWT obtenu via /api/auth/login'
+        security:
+            - Bearer: []
+        tags:
+            - { name: Auth, description: Authentification et gestion des sessions }
+            - { name: Users, description: Gestion des comptes utilisateurs }
+            - { name: Patients, description: Gestion spécifique des patients }
+            - { name: Appointments, description: Gestion des rendez-vous }
+            - { name: MedicalRecords, description: Dossiers Médicaux Électroniques }
+            - { name: Teleexpertise, description: Téléexpertise et avis médicaux à distance }
+            - { name: Shop, description: "Boutique en ligne (catalogue, panier, commandes)" }
+            - { name: Payments, description: Paiements et transactions }
+            - { name: Notifications, description: "Notifications (Email, SMS, in-app)" }
+            - { name: Feedback, description: Avis et retours utilisateurs }
+            - { name: Content, description: Campagnes éducatives et contenus }
+            - { name: Dashboard, description: Tableau de bord et reporting }
+    areas:
+        path_patterns:
+            - ^/api(?!/doc$)

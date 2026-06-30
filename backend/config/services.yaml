@@ -1,0 +1,54 @@
+parameters:
+    app.mailer_from: '%env(MAILER_FROM)%'
+    app.mailer_from_name: '%env(MAILER_FROM_NAME)%'
+    app.sms.provider: '%env(SMS_PROVIDER)%'
+    app.sms.api_key: '%env(SMS_API_KEY)%'
+    app.sms.api_secret: '%env(SMS_API_SECRET)%'
+    app.sms.sender: '%env(SMS_SENDER)%'
+    app.environment: '%env(APP_ENV)%'
+
+    app.payment.providers:
+        orange:
+            url: '%env(ORANGE_MONEY_API_URL)%'
+            merchant_key: '%env(ORANGE_MONEY_MERCHANT_KEY)%'
+        airtel:
+            url: '%env(AIRTEL_MONEY_API_URL)%'
+            client_id: '%env(AIRTEL_MONEY_CLIENT_ID)%'
+            client_secret: '%env(AIRTEL_MONEY_CLIENT_SECRET)%'
+        mvola:
+            url: '%env(MVOLA_API_URL)%'
+            consumer_key: '%env(MVOLA_CONSUMER_KEY)%'
+            consumer_secret: '%env(MVOLA_CONSUMER_SECRET)%'
+
+services:
+    # Autowiring par défaut
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # Auto-enregistrement des classes en tant que services
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # Configuration explicite des services qui ont besoin de paramètres scalaires
+    App\Service\NotificationService:
+        arguments:
+            $mailerFrom: '%app.mailer_from%'
+            $mailerFromName: '%app.mailer_from_name%'
+
+    App\Service\SmsService:
+        arguments:
+            $provider: '%app.sms.provider%'
+            $apiKey: '%app.sms.api_key%'
+            $apiSecret: '%app.sms.api_secret%'
+            $senderName: '%app.sms.sender%'
+            $environment: '%app.environment%'
+
+    App\Service\PaymentService:
+        arguments:
+            $providerConfigs: '%app.payment.providers%'
+            $environment: '%app.environment%'

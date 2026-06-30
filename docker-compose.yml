@@ -1,0 +1,101 @@
+services:
+  # ----------- Base de données PostgreSQL -----------
+  database:
+    image: postgres:16-alpine
+    container_name: vanclinic_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vanclinic
+      POSTGRES_USER: vanclinic
+      POSTGRES_PASSWORD: vanclinic_secret
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - vanclinic_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vanclinic"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ----------- PHP-FPM (Symfony) -----------
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: vanclinic_php
+    restart: unless-stopped
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - vanclinic_network
+    environment:
+      DATABASE_URL: "postgresql://vanclinic:vanclinic_secret@database:5432/vanclinic?serverVersion=16&charset=utf8"
+
+  # ----------- Nginx (reverse proxy pour Symfony) -----------
+  nginx:
+    image: nginx:alpine
+    container_name: vanclinic_nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - vanclinic_network
+
+  # ----------- React (Vite dev server) -----------
+  frontend:
+    image: node:20-alpine
+    container_name: vanclinic_frontend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    networks:
+      - vanclinic_network
+
+  # ----------- pgAdmin (interface graphique PostgreSQL) -----------
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: vanclinic_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@vanclinic.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - database
+    networks:
+      - vanclinic_network
+
+  # ----------- MailHog (capture des emails en dev) -----------
+  mailhog:
+    image: mailhog/mailhog
+    container_name: vanclinic_mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # UI Web
+    networks:
+      - vanclinic_network
+
+networks:
+  vanclinic_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
