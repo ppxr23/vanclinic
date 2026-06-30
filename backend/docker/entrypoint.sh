@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+export APP_ENV=prod
+export APP_DEBUG=0
+
 # Génération des clés JWT si absentes
 mkdir -p /var/www/html/config/jwt
 
