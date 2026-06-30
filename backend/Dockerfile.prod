@@ -11,13 +11,13 @@ COPY composer.json composer.lock symfony.lock ./
 RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader --no-scripts
 
 COPY . .
-RUN composer dump-autoload --optimize --no-dev && \
+RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader && \
     php bin/console cache:warmup --env=prod 2>/dev/null || true
 
 # ─── Stage 2 : image finale PHP-FPM + Nginx ─────────────────
 FROM php:8.4-fpm-alpine
 
-RUN apk add --no-cache nginx supervisor icu-dev postgresql-dev oniguruma-dev libpng-dev libxml2-dev openssl && \
+RUN apk add --no-cache nginx supervisor gettext icu-dev postgresql-dev oniguruma-dev libpng-dev libxml2-dev openssl && \
     docker-php-ext-install -j1 pdo pdo_pgsql pgsql intl opcache mbstring && \
     { \
       echo "opcache.enable=1"; \
