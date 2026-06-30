@@ -4,6 +4,7 @@ set -e
 export APP_ENV=prod
 export APP_DEBUG=0
 export PORT=${PORT:-80}
+export JWT_PASSPHRASE=${JWT_PASSPHRASE:-ChangeThisPassphraseInProduction}
 
 # Génération de la config nginx avec le bon port
 sed "s/__PORT__/${PORT}/g" /etc/nginx/http.d/default.conf.template > /etc/nginx/http.d/default.conf
