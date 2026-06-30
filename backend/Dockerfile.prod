@@ -32,7 +32,8 @@ RUN apk add --no-cache nginx supervisor icu-dev postgresql-dev oniguruma-dev lib
 
 WORKDIR /var/www/html
 COPY --from=builder /app .
-RUN chown -R www-data:www-data /var/www/html/var /var/www/html/public
+RUN mkdir -p var/cache var/log && \
+    chown -R www-data:www-data var public
 
 # Nginx config
 RUN mkdir -p /run/nginx
