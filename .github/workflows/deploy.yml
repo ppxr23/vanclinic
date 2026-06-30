@@ -9,9 +9,6 @@ jobs:
   deploy-frontend:
     name: Frontend → Vercel
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -27,9 +24,11 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Install dependencies
+        working-directory: frontend
         run: pnpm install --frozen-lockfile
 
       - name: Build
+        working-directory: frontend
         run: pnpm run build:vercel
 
       - name: Install Vercel CLI
@@ -43,9 +42,9 @@ jobs:
 
       - name: Package output
         run: |
-          mkdir -p .vercel/output/static
-          cp -r dist/public/. .vercel/output/static/
-          echo '{"version":3}' > .vercel/output/config.json
+          mkdir -p frontend/.vercel/output/static
+          cp -r frontend/dist/public/. frontend/.vercel/output/static/
+          echo '{"version":3}' > frontend/.vercel/output/config.json
 
       - name: Deploy to production
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
