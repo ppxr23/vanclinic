@@ -6,7 +6,7 @@ export APP_DEBUG=0
 export PORT=${PORT:-80}
 
 # Génération de la config nginx avec le bon port
-envsubst '${PORT}' < /etc/nginx/http.d/default.conf.template > /etc/nginx/http.d/default.conf
+sed "s/__PORT__/${PORT}/g" /etc/nginx/http.d/default.conf.template > /etc/nginx/http.d/default.conf
 
 # Génération des clés JWT si absentes
 mkdir -p /var/www/html/config/jwt
