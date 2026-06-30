@@ -32,3 +32,6 @@ backend/config/jwt/*.pem
 
 # Volumes Docker locaux
 postgres_data/
+.vercel
+.env*
+frontend/.env.local
