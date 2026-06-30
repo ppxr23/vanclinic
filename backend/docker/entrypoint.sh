@@ -22,5 +22,10 @@ fi
 echo "[entrypoint] Migrations..."
 php /var/www/html/bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 
-echo "[entrypoint] Démarrage..."
+# Inject Railway PORT into nginx config (default to 80 for local dev)
+export PORT="${PORT:-80}"
+envsubst '${PORT}' < /etc/nginx/http.d/default.conf > /tmp/nginx.conf
+mv /tmp/nginx.conf /etc/nginx/http.d/default.conf
+
+echo "[entrypoint] Démarrage sur port $PORT..."
 exec /usr/bin/supervisord -c /etc/supervisord.conf
