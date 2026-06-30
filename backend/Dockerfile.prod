@@ -6,6 +6,8 @@ RUN apk add --no-cache git curl zip unzip icu-dev postgresql-dev oniguruma-dev a
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 WORKDIR /app
 COPY composer.json composer.lock symfony.lock ./
 RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader --no-scripts
