@@ -119,7 +119,7 @@ const TELE = [
 const MEDICAL_RECORDS = [
   {
     id: 1,
-    visitReason: 'Contrôle annuel',
+    chiefComplaint: 'Contrôle annuel',
     status: 'actif',
     createdAt: '2026-05-01T10:00:00',
     ophthalmologist: { fullName: 'Dr. Marie Rakoto' },
@@ -149,13 +149,13 @@ describe('DashboardPage', () => {
 
   it('affiche le titre "Tableau de bord"', () => {
     render(<DashboardPage />);
-    expect(screen.getByText('Tableau de bord')).toBeInTheDocument();
+    expect(screen.getByText('admin.nav.dashboard')).toBeInTheDocument();
   });
 
   it('affiche le nombre de patients suivis depuis /admin/dashboard', async () => {
     render(<DashboardPage />);
     await waitFor(() => {
-      expect(screen.getByText('Patients suivis')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.dashboard.patientsFollowed')).toBeInTheDocument();
       expect(screen.getByText('45')).toBeInTheDocument();
     });
   });
@@ -170,7 +170,7 @@ describe('DashboardPage', () => {
   it('affiche les alertes de stock bas depuis /products', async () => {
     render(<DashboardPage />);
     await waitFor(() => {
-      expect(screen.getByText('Alertes stock')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.dashboard.stockAlerts')).toBeInTheDocument();
     });
   });
 
@@ -188,9 +188,9 @@ describe('PatientsPage', () => {
 
   it('affiche le titre et le sous-titre avec le nombre de patients', async () => {
     render(<PatientsPage />);
-    expect(screen.getByText('Gestion des patients')).toBeInTheDocument();
+    expect(screen.getByText('admin.pages.patients.title')).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByText('1 patients enregistrés')).toBeInTheDocument();
+      expect(screen.getByText('1 admin.pages.patients.subtitle')).toBeInTheDocument();
     });
   });
 
@@ -204,13 +204,13 @@ describe('PatientsPage', () => {
 
   it('affiche le filtre de district et le bouton Nouveau patient', () => {
     render(<PatientsPage />);
-    expect(screen.getByText(/Nouveau patient/)).toBeInTheDocument();
-    expect(screen.getByText('Tous les districts')).toBeInTheDocument();
+    expect(screen.getByText('admin.pages.patients.newPatient')).toBeInTheDocument();
+    expect(screen.getByText('admin.pages.patients.allDistricts')).toBeInTheDocument();
   });
 
   it('ouvre le modal de création de patient au clic', async () => {
     render(<PatientsPage />);
-    fireEvent.click(screen.getByText(/Nouveau patient/));
+    fireEvent.click(screen.getByText('admin.pages.patients.newPatient'));
     await waitFor(() => {
       expect(screen.getByPlaceholderText('Jean')).toBeInTheDocument();
     });
@@ -218,9 +218,9 @@ describe('PatientsPage', () => {
 
   it('appelle POST /auth/register à la soumission du formulaire', async () => {
     render(<PatientsPage />);
-    fireEvent.click(screen.getByText(/Nouveau patient/));
+    fireEvent.click(screen.getByText('admin.pages.patients.newPatient'));
     await waitFor(() => screen.getByPlaceholderText('Jean'));
-    fireEvent.click(screen.getByText('Enregistrer'));
+    fireEvent.click(screen.getByText('admin.pages.patients.modal.save'));
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith(
         '/auth/register',
@@ -237,7 +237,7 @@ describe('AppointmentsPage', () => {
 
   it('affiche le titre "Rendez-vous"', () => {
     render(<AppointmentsPage />);
-    expect(screen.getByText('Rendez-vous')).toBeInTheDocument();
+    expect(screen.getByText('admin.nav.appointments')).toBeInTheDocument();
   });
 
   it('affiche le rendez-vous depuis /admin/appointments', async () => {
@@ -250,24 +250,24 @@ describe('AppointmentsPage', () => {
   it('affiche les compteurs de statuts', async () => {
     render(<AppointmentsPage />);
     await waitFor(() => {
-      expect(screen.getByText('Planifiés')).toBeInTheDocument();
-      expect(screen.getByText('Confirmés')).toBeInTheDocument();
-      expect(screen.getByText('Terminés')).toBeInTheDocument();
-      expect(screen.getByText('Annulés')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.appointments.scheduled')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.appointments.confirmed')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.appointments.completed')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.appointments.cancelled')).toBeInTheDocument();
     });
   });
 
   it('affiche le bouton Confirmer pour un RDV planifié', async () => {
     render(<AppointmentsPage />);
     await waitFor(() => {
-      expect(screen.getByText('Confirmer')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.appointments.confirm')).toBeInTheDocument();
     });
   });
 
   it('appelle POST /appointments/{id}/confirm sur clic Confirmer', async () => {
     render(<AppointmentsPage />);
-    await waitFor(() => screen.getByText('Confirmer'));
-    fireEvent.click(screen.getByText('Confirmer'));
+    await waitFor(() => screen.getByText('admin.pages.appointments.confirm'));
+    fireEvent.click(screen.getByText('admin.pages.appointments.confirm'));
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith('/appointments/1/confirm');
     });
@@ -276,12 +276,12 @@ describe('AppointmentsPage', () => {
   it('appelle POST /appointments/{id}/cancel après confirmation de la boîte de dialogue', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<AppointmentsPage />);
-    await waitFor(() => screen.getByText('Annuler'));
-    fireEvent.click(screen.getByText('Annuler'));
+    await waitFor(() => screen.getByText('admin.pages.appointments.cancel'));
+    fireEvent.click(screen.getByText('admin.pages.appointments.cancel'));
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith(
         '/appointments/1/cancel',
-        expect.objectContaining({ reason: 'Annulé par le coordinateur' }),
+        expect.objectContaining({ reason: 'admin.pages.appointments.cancelReason' }),
       );
     });
   });
@@ -293,7 +293,7 @@ describe('MedicalPage', () => {
 
   it('affiche le titre "Dossiers médicaux"', () => {
     render(<MedicalPage />);
-    expect(screen.getByText('Dossiers médicaux')).toBeInTheDocument();
+    expect(screen.getByText('admin.pages.medical.title')).toBeInTheDocument();
   });
 
   it('affiche la liste des patients depuis /admin/patients', async () => {
@@ -330,13 +330,13 @@ describe('TelemedicinePage', () => {
 
   it('affiche le titre "Télémédecine"', () => {
     render(<TelemedicinePage />);
-    expect(screen.getByText('Télémédecine')).toBeInTheDocument();
+    expect(screen.getByText('admin.nav.telemedicine')).toBeInTheDocument();
   });
 
   it('affiche les stats de demandes en attente', async () => {
     render(<TelemedicinePage />);
     await waitFor(() => {
-      expect(screen.getByText('Demandes en attente')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.telemedicine.pending')).toBeInTheDocument();
       expect(screen.getAllByText('1').length).toBeGreaterThanOrEqual(1);
     });
   });
@@ -351,10 +351,10 @@ describe('TelemedicinePage', () => {
 
   it('ouvre le modal de réponse et appelle POST /teleexpertise/{id}/respond', async () => {
     render(<TelemedicinePage />);
-    await waitFor(() => screen.getByText('Répondre'));
-    fireEvent.click(screen.getByText('Répondre'));
-    await waitFor(() => screen.getByText('Répondre à la demande'));
-    fireEvent.click(screen.getByText('Envoyer la réponse'));
+    await waitFor(() => screen.getByText('admin.pages.telemedicine.respond'));
+    fireEvent.click(screen.getByText('admin.pages.telemedicine.respond'));
+    await waitFor(() => screen.getByText('admin.pages.telemedicine.modal.title'));
+    fireEvent.click(screen.getByText('admin.pages.telemedicine.modal.send'));
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith(
         '/teleexpertise/1/respond',
@@ -368,22 +368,21 @@ describe('TelemedicinePage', () => {
 describe('PlanningPage', () => {
   beforeEach(() => { vi.clearAllMocks(); setupMocks(); });
 
-  it('affiche le titre "Planning du Van mobile"', () => {
+  it('affiche le titre du planning', () => {
     render(<PlanningPage />);
-    expect(screen.getByText('Planning du Van mobile')).toBeInTheDocument();
+    expect(screen.getByText('admin.nav.planning')).toBeInTheDocument();
   });
 
-  it('affiche les jours de la semaine', () => {
+  it('affiche les statistiques de planning', () => {
     render(<PlanningPage />);
-    expect(screen.getByText('Lun')).toBeInTheDocument();
-    expect(screen.getByText('Mar')).toBeInTheDocument();
-    expect(screen.getByText('Ven')).toBeInTheDocument();
+    expect(screen.getByText('admin.pages.planning.activeMissions')).toBeInTheDocument();
+    expect(screen.getByText('admin.pages.planning.completedMissions')).toBeInTheDocument();
   });
 
-  it('affiche tous les rendez-vous dans le tableau du bas', async () => {
+  it('affiche le message "aucune mission" quand la liste est vide', async () => {
     render(<PlanningPage />);
     await waitFor(() => {
-      expect(screen.getByText('Rakoto Andry')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.planning.noMissions')).toBeInTheDocument();
     });
   });
 });
@@ -394,7 +393,7 @@ describe('ShopPage', () => {
 
   it('affiche le titre "Gestion de la boutique"', () => {
     render(<ShopPage />);
-    expect(screen.getByText('Gestion de la boutique')).toBeInTheDocument();
+    expect(screen.getByText('admin.pages.shop.title')).toBeInTheDocument();
   });
 
   it('affiche les produits depuis /products', async () => {
@@ -408,8 +407,8 @@ describe('ShopPage', () => {
   it('affiche les stats de stock et de rupture', async () => {
     render(<ShopPage />);
     await waitFor(() => {
-      expect(screen.getByText('En stock')).toBeInTheDocument();
-      expect(screen.getByText('Ruptures')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.shop.inStock')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.shop.outOfStock')).toBeInTheDocument();
     });
   });
 });
@@ -420,13 +419,13 @@ describe('InventoryPage', () => {
 
   it('affiche le titre "Inventaire"', () => {
     render(<InventoryPage />);
-    expect(screen.getByText('Inventaire')).toBeInTheDocument();
+    expect(screen.getByText('admin.pages.inventory.title')).toBeInTheDocument();
   });
 
   it('affiche la stat "Unités totales"', async () => {
     render(<InventoryPage />);
     await waitFor(() => {
-      expect(screen.getByText('Unités totales')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.inventory.totalUnits')).toBeInTheDocument();
     });
   });
 
@@ -446,7 +445,7 @@ describe('OrdersPage', () => {
 
   it('affiche le titre "Commandes"', () => {
     render(<OrdersPage />);
-    expect(screen.getByText('Commandes')).toBeInTheDocument();
+    expect(screen.getByText('admin.nav.orders')).toBeInTheDocument();
   });
 
   it('affiche la commande depuis /admin/orders', async () => {
@@ -460,16 +459,16 @@ describe('OrdersPage', () => {
   it('affiche le bouton "Traiter" pour une commande en attente', async () => {
     render(<OrdersPage />);
     await waitFor(() => {
-      expect(screen.getByText('Traiter')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.orders.process')).toBeInTheDocument();
     });
   });
 
   it('appelle PATCH /orders/{id}/status sur clic Traiter', async () => {
     render(<OrdersPage />);
-    await waitFor(() => screen.getByText('Traiter'));
-    fireEvent.click(screen.getByText('Traiter'));
+    await waitFor(() => screen.getByText('admin.pages.orders.process'));
+    fireEvent.click(screen.getByText('admin.pages.orders.process'));
     await waitFor(() => {
-      expect(mockApi.patch).toHaveBeenCalledWith('/orders/1/status', { status: 'processing' });
+      expect(mockApi.patch).toHaveBeenCalledWith('/orders/1/status', { status: 'preparing' });
     });
   });
 });
@@ -480,21 +479,21 @@ describe('ReportsPage', () => {
 
   it('affiche le titre "Rapports"', () => {
     render(<ReportsPage />);
-    expect(screen.getByText('Rapports')).toBeInTheDocument();
+    expect(screen.getByText('admin.nav.reports')).toBeInTheDocument();
   });
 
   it('affiche les indicateurs clés depuis /admin/dashboard', async () => {
     render(<ReportsPage />);
     await waitFor(() => {
-      expect(screen.getByText('Patients enregistrés')).toBeInTheDocument();
-      expect(screen.getByText('Consultations terminées')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.reports.patientsRegistered')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.reports.consultationsCompleted')).toBeInTheDocument();
     });
   });
 
   it('affiche le graphique des statuts de rendez-vous', async () => {
     render(<ReportsPage />);
     await waitFor(() => {
-      expect(screen.getByText('Statuts des rendez-vous')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.reports.appointmentStatus')).toBeInTheDocument();
     });
   });
 });
@@ -505,13 +504,13 @@ describe('AnalyticsPage', () => {
 
   it('affiche le titre "Analytiques"', () => {
     render(<AnalyticsPage />);
-    expect(screen.getByText('Analytiques')).toBeInTheDocument();
+    expect(screen.getByText('admin.nav.analytics')).toBeInTheDocument();
   });
 
   it('affiche le nombre total de patients depuis /admin/dashboard', async () => {
     render(<AnalyticsPage />);
     await waitFor(() => {
-      expect(screen.getByText('Total patients')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.analytics.totalPatients')).toBeInTheDocument();
       expect(screen.getAllByText('45').length).toBeGreaterThanOrEqual(1);
     });
   });
@@ -519,8 +518,8 @@ describe('AnalyticsPage', () => {
   it('affiche le revenu total et le stock par catégorie', async () => {
     render(<AnalyticsPage />);
     await waitFor(() => {
-      expect(screen.getByText('Revenus total')).toBeInTheDocument();
-      expect(screen.getByText('Stock par catégorie')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.analytics.totalRevenue')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.analytics.stockByCategory')).toBeInTheDocument();
     });
   });
 });
@@ -531,7 +530,7 @@ describe('UsersPage', () => {
 
   it('affiche le titre "Utilisateurs"', () => {
     render(<UsersPage />);
-    expect(screen.getByText('Utilisateurs')).toBeInTheDocument();
+    expect(screen.getByText('admin.pages.users.title')).toBeInTheDocument();
   });
 
   it('affiche l\'utilisateur depuis /admin/users', async () => {
@@ -551,17 +550,17 @@ describe('UsersPage', () => {
 
   it('ouvre le modal "Nouvel utilisateur" sur clic', async () => {
     render(<UsersPage />);
-    fireEvent.click(screen.getByText(/Nouvel utilisateur/));
+    fireEvent.click(screen.getByText('admin.pages.users.newUser'));
     await waitFor(() => {
-      expect(screen.getByText('Créer le compte')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.users.modal.create')).toBeInTheDocument();
     });
   });
 
   it('appelle POST /admin/users/staff à la soumission du formulaire', async () => {
     render(<UsersPage />);
-    fireEvent.click(screen.getByText(/Nouvel utilisateur/));
-    await waitFor(() => screen.getByText('Créer le compte'));
-    fireEvent.click(screen.getByText('Créer le compte'));
+    fireEvent.click(screen.getByText('admin.pages.users.newUser'));
+    await waitFor(() => screen.getByText('admin.pages.users.modal.create'));
+    fireEvent.click(screen.getByText('admin.pages.users.modal.create'));
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith(
         '/admin/users/staff',
@@ -577,13 +576,13 @@ describe('LogsPage', () => {
 
   it('affiche le titre "Journaux système"', () => {
     render(<LogsPage />);
-    expect(screen.getByText('Journaux système')).toBeInTheDocument();
+    expect(screen.getByText('admin.pages.logs.title')).toBeInTheDocument();
   });
 
   it('affiche les logs de rendez-vous depuis /admin/appointments', async () => {
     render(<LogsPage />);
     await waitFor(() => {
-      expect(screen.getByText('Rendez-vous créé')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.logs.appointmentCreated')).toBeInTheDocument();
       expect(screen.getAllByText('Rakoto Andry').length).toBeGreaterThanOrEqual(1);
     });
   });
@@ -591,7 +590,7 @@ describe('LogsPage', () => {
   it('affiche les logs de commandes depuis /admin/orders', async () => {
     render(<LogsPage />);
     await waitFor(() => {
-      expect(screen.getByText('Commande passée')).toBeInTheDocument();
+      expect(screen.getByText('admin.pages.logs.orderPlaced')).toBeInTheDocument();
     });
   });
 });
@@ -600,7 +599,7 @@ describe('LogsPage', () => {
 describe('SettingsPage', () => {
   it('affiche le titre "Paramètres"', () => {
     render(<SettingsPage />);
-    expect(screen.getByText('Paramètres')).toBeInTheDocument();
+    expect(screen.getByText('admin.nav.settings')).toBeInTheDocument();
   });
 
   it('affiche les intégrations de paiement disponibles', () => {

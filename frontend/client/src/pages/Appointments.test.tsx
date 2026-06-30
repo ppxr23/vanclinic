@@ -127,7 +127,7 @@ describe('Appointments', () => {
   it('le bouton Retour revient à la liste', async () => {
     render(<Appointments />);
     await goToType();
-    fireEvent.click(screen.getByRole('button', { name: '' }));
+    fireEvent.click(screen.getAllByRole('button', { name: '' })[0]);
     await waitFor(() => {
       expect(screen.getByText('appointments.title')).toBeInTheDocument();
     });

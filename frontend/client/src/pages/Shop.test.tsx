@@ -44,6 +44,7 @@ const selectPayAndConfirm = async () => {
 describe('Shop', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
     mockApi.get.mockResolvedValue({ data: PRODUCTS });
     mockApi.post.mockImplementation((url: string) => {
       if (url === '/orders') return Promise.resolve({ data: { order: { id: 1, orderNumber: 'VC-ORD-2026-000001' } } });
@@ -99,8 +100,10 @@ describe('Shop', () => {
   it('affiche le panier vide quand rien n\'est ajouté', async () => {
     render(<Shop />);
     await waitFor(() => screen.getAllByTestId('product-card'));
-    await openCart();
-    expect(screen.getByText('shop.emptyCart')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('cart-button'));
+    await waitFor(() => {
+      expect(screen.getByText('shop.emptyCart')).toBeInTheDocument();
+    });
   });
 
   it('met à jour la quantité dans le panier (+1)', async () => {

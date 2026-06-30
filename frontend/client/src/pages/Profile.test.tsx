@@ -115,7 +115,7 @@ describe('Profile', () => {
   it('appelle logout() et navigue vers /login', async () => {
     render(<Profile />);
     await waitFor(() => screen.getByTestId('profile-name'));
-    fireEvent.click(screen.getByText('profile.logout'));
+    fireEvent.click(screen.getAllByText('profile.logout')[0]);
     expect(mockLogout).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith('/login');
   });
