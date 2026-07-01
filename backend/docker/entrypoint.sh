@@ -26,6 +26,9 @@ if [ ! -f /var/www/html/config/jwt/private.pem ]; then
     echo "[entrypoint] Clés JWT générées."
 fi
 
+chown www-data:www-data /var/www/html/config/jwt/private.pem /var/www/html/config/jwt/public.pem
+chmod 640 /var/www/html/config/jwt/private.pem /var/www/html/config/jwt/public.pem
+
 # Migrations
 echo "[entrypoint] Migrations..."
 php /var/www/html/bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
