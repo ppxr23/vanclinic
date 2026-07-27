@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: vanclinic-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile.prod
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_DEBUG
+        value: "0"
+      - key: APP_SECRET
+        sync: false
+      - key: JWT_PASSPHRASE
+        sync: false
+      - key: JWT_SECRET_KEY
+        value: /var/www/html/config/jwt/private.pem
+      - key: JWT_PUBLIC_KEY
+        value: /var/www/html/config/jwt/public.pem
+      - key: JWT_TOKEN_TTL
+        value: "3600"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vanclinic-db
+          property: connectionString
+      - key: CORS_ALLOW_ORIGIN
+        value: '^https?://(localhost|127\.0\.0\.1|.*\.vercel\.app|.*\.vanclinic\.mg)(:[0-9]+)?$'
+
+databases:
+  - name: vanclinic-db
+    plan: free
+    databaseName: vanclinic
+    user: vanclinic
