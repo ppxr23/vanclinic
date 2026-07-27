@@ -39,11 +39,11 @@ Ce document atteste de la livraison du **Lot 2 — Développement**, dont le liv
 | Couche | Technologie | Hébergement |
 |---|---|---|
 | Frontend | React 18 + TypeScript + Vite | Vercel |
-| Backend | PHP 8.4 + Symfony 7 + API Platform | Render |
-| Base de données | PostgreSQL 15 | Render (service dédié) |
+| Backend | PHP 8.4 + Symfony 7 + API Platform | Railway |
+| Base de données | PostgreSQL 15 | Railway (service dédié) |
 | Authentification | JWT (LexikJWTAuthenticationBundle) | — |
 | CI/CD | GitHub Actions | GitHub |
-| Conteneurisation | Docker (multi-stage build) | Render |
+| Conteneurisation | Docker (multi-stage build) | Railway |
 
 ---
 
@@ -73,7 +73,7 @@ Ce document atteste de la livraison du **Lot 2 — Développement**, dont le liv
 
 - Pipeline GitHub Actions déclenché à chaque push sur `main`
 - Build frontend automatique → déploiement Vercel
-- Build Docker multi-stage → déploiement Render
+- Build Docker multi-stage → déploiement Railway
 - Healthcheck nginx statique (`/api/health`)
 - Génération automatique des clés JWT au démarrage
 
