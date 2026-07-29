@@ -35,6 +35,9 @@ class Product
     #[ORM\Column(type: 'string', length: 30, enumType: ProductCategory::class)]
     private ProductCategory $category = ProductCategory::EYEGLASSES;
 
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $subCategory = null;
+
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $brand = null;
 
@@ -95,6 +98,9 @@ class Product
 
     public function getCategory(): ProductCategory { return $this->category; }
     public function setCategory(ProductCategory $c): self { $this->category = $c; return $this; }
+
+    public function getSubCategory(): ?string { return $this->subCategory; }
+    public function setSubCategory(?string $s): self { $this->subCategory = $s; return $this; }
 
     public function getBrand(): ?string { return $this->brand; }
     public function setBrand(?string $b): self { $this->brand = $b; return $this; }

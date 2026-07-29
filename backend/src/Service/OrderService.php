@@ -26,7 +26,7 @@ class OrderService
     /**
      * Crée une nouvelle commande pour un patient.
      *
-     * @param array<int, array{productId: int, quantity: int}> $items
+     * @param array<int, array{productId: int, quantity: int, customization?: array<string, mixed>}> $items
      * @param array<string, mixed> $deliveryData
      */
     public function createOrder(Patient $patient, array $items, array $deliveryData): Order
@@ -57,6 +57,9 @@ class OrderService
 
             $orderItem = new OrderItem();
             $orderItem->setProduct($product)->setQuantity($quantity);
+            if (!empty($itemData['customization'])) {
+                $orderItem->setCustomization($itemData['customization']);
+            }
             $order->addItem($orderItem);
 
             $product->decreaseStock($quantity);

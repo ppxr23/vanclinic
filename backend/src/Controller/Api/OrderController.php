@@ -151,6 +151,7 @@ class OrderController extends AbstractController
                 'quantity' => $i->getQuantity(),
                 'unitPriceMga' => $i->getUnitPriceMga(),
                 'lineTotalMga' => $i->getLineTotalMga(),
+                'customization' => $i->getCustomization(),
             ], $o->getItems()->toArray()),
             'delivery' => [
                 'address' => $o->getDeliveryAddress(),

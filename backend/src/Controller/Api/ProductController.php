@@ -26,11 +26,19 @@ class ProductController extends AbstractController
     ) {
     }
 
+    private const GROUP_CATEGORIES = [
+        'lunettes'    => ['eyeglasses', 'sunglasses'],
+        'verres'      => ['lenses', 'contact_lenses'],
+        'accessoires' => ['accessories'],
+    ];
+
     #[Route('', name: 'list', methods: ['GET'])]
     #[OA\Get(
         summary: 'Liste des produits du catalogue',
         parameters: [
-            new OA\Parameter(name: 'category', in: 'query', schema: new OA\Schema(type: 'string', enum: ['eyeglasses', 'sunglasses', 'lenses', 'contact_lenses', 'accessories'])),
+            new OA\Parameter(name: 'category', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'group', in: 'query', schema: new OA\Schema(type: 'string', enum: ['lunettes', 'verres', 'accessoires'])),
+            new OA\Parameter(name: 'subCategory', in: 'query', schema: new OA\Schema(type: 'string')),
         ]
     )]
     public function list(Request $request): JsonResponse
@@ -41,6 +49,16 @@ class ProductController extends AbstractController
         }
 
         $products = $this->productRepository->findActiveByCategory($category);
+
+        if ($group = $request->query->get('group')) {
+            $allowed = self::GROUP_CATEGORIES[$group] ?? [];
+            $products = array_values(array_filter($products, fn($p) => in_array($p->getCategory()->value, $allowed, true)));
+        }
+
+        if ($subCat = $request->query->get('subCategory')) {
+            $products = array_values(array_filter($products, fn($p) => $p->getSubCategory() === $subCat));
+        }
+
         return $this->json(array_map([$this, 'serialize'], $products));
     }
 
@@ -111,6 +129,7 @@ class ProductController extends AbstractController
             'description' => $p->getDescription(),
             'category' => $p->getCategory()->value,
             'categoryLabel' => $p->getCategory()->getLabel(),
+            'subCategory' => $p->getSubCategory(),
             'brand' => $p->getBrand(),
             'priceMga' => $p->getPriceMga(),
             'stockQuantity' => $p->getStockQuantity(),

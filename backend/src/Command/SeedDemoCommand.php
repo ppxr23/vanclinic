@@ -102,24 +102,42 @@ class SeedDemoCommand extends Command
 
     private function seedProducts(SymfonyStyle $io): void
     {
+        // [sku, name, desc, category, subCategory, brand, price, stock, couleurs]
         $products = [
-            ['VC-LUN-001', 'Lunettes Classique Métal',    'Monture métal noir, légère et résistante',    ProductCategory::EYEGLASSES,  'VanOptic',      45000, 50],
-            ['VC-LUN-002', 'Lunettes Tendance Acétate',   'Monture acétate écaille, style moderne',      ProductCategory::EYEGLASSES,  'VanOptic',      65000, 30],
-            ['VC-LUN-003', 'Lunettes Enfant Souples',     'Monture flexible adaptée aux enfants',        ProductCategory::EYEGLASSES,  'VanOptic Kids', 35000, 40],
-            ['VC-SOL-001', 'Lunettes de Soleil Aviator',  'Protection UV400, verres polarisés',          ProductCategory::SUNGLASSES,  'VanOptic',      55000, 25],
-            ['VC-VER-001', 'Verres Unifocaux Standard',   'Verres correcteurs simples',                  ProductCategory::LENSES,      'Essilor',       25000, 100],
-            ['VC-VER-002', 'Verres Progressifs',          'Verres progressifs multifocaux',              ProductCategory::LENSES,      'Essilor',       85000, 40],
-            ['VC-ACC-001', 'Étui rigide premium',         'Étui protecteur en simili-cuir',              ProductCategory::ACCESSORIES, 'VanOptic',       8000, 80],
-            ['VC-ACC-002', 'Lingettes nettoyantes (x50)', 'Lingettes anti-buée pour verres',             ProductCategory::ACCESSORIES, 'VanOptic',      12000, 60],
+            ['VC-LUN-001', 'Monture Classique Métal',       'Monture métal légère et résistante, compatible correcteurs',   ProductCategory::EYEGLASSES,  'monture',         'VanOptic',      45000,  50, ['noir', 'argent', 'or']],
+            ['VC-LUN-002', 'Monture Tendance Acétate',      'Monture acétate style moderne, compatible correcteurs',         ProductCategory::EYEGLASSES,  'monture',         'VanOptic',      65000,  30, ['écaille', 'noir', 'bordeaux']],
+            ['VC-LUN-003', 'Monture Enfant Souple',         'Monture flexible TR90 adaptée aux enfants',                    ProductCategory::EYEGLASSES,  'enfant',          'VanOptic Kids', 35000,  40, ['bleu', 'rose', 'rouge', 'vert']],
+            ['VC-LUN-004', 'Monture Sport Wraparound',      'Monture sport légère, branches flexibles',                     ProductCategory::EYEGLASSES,  'sport',           'VanOptic',      55000,  20, ['noir', 'rouge', 'bleu']],
+            ['VC-LUN-005', 'Lunettes de Lecture +1.5',      'Grossissement +1.5D, légères et confortables',                 ProductCategory::EYEGLASSES,  'lecture',         'VanOptic',      25000,  60, ['noir', 'marron', 'or']],
+            ['VC-SOL-001', 'Lunettes de Soleil Aviator',    'Protection UV400, verres polarisés',                           ProductCategory::SUNGLASSES,  'soleil',          'VanOptic',      55000,  25, ['or/vert', 'argent/gris', 'noir/noir']],
+            ['VC-SOL-002', 'Lunettes de Soleil Wayfarer',   'Style vintage, protection UV400',                              ProductCategory::SUNGLASSES,  'soleil',          'VanOptic',      48000,  30, ['noir', 'écaille', 'bleu']],
+            ['VC-VER-001', 'Verres Unifocaux Standard',     'Verres correcteurs monofocaux indice 1.50',                    ProductCategory::LENSES,      'unifocaux',       'Essilor',       25000, 100, []],
+            ['VC-VER-002', 'Verres Progressifs Premium',    'Verres multifocaux progressifs indice 1.60',                   ProductCategory::LENSES,      'progressifs',     'Essilor',       85000,  40, []],
+            ['VC-VER-003', 'Verres Photochromiques',        'Verres qui s\'assombrissent au soleil (Transitions)',           ProductCategory::LENSES,      'photochromiques', 'Essilor',       70000,  35, []],
+            ['VC-VER-004', 'Verres Polarisants',            'Verres polarisants anti-reflets pour le sport',                ProductCategory::LENSES,      'polarisants',     'Essilor',       60000,  25, []],
+            ['VC-LEN-001', 'Lentilles mensuelles (x6)',     'Lentilles souples mensuelles, correction sphérique',           ProductCategory::CONTACT_LENSES, 'lentilles',    'Alcon',         45000,  50, []],
+            ['VC-ACC-001', 'Étui rigide premium',           'Étui protecteur en simili-cuir avec chiffon',                  ProductCategory::ACCESSORIES, 'etuis',           'VanOptic',       8000,  80, ['noir', 'marron', 'bleu']],
+            ['VC-ACC-002', 'Lingettes nettoyantes (x50)',   'Lingettes anti-buée individuelles pour verres',                ProductCategory::ACCESSORIES, 'nettoyage',       'VanOptic',      12000,  60, []],
+            ['VC-ACC-003', 'Cordon lunettes élastique',     'Cordon ajustable pour maintenir les lunettes',                 ProductCategory::ACCESSORIES, 'cordons',         'VanOptic',       3500, 100, ['noir', 'marron', 'bleu', 'rouge']],
+            ['VC-ACC-004', 'Kit réparation lunettes',       'Tournevis + vis + plaquettes de nez de rechange',             ProductCategory::ACCESSORIES, 'outils',          'VanOptic',       5000,  70, []],
         ];
 
-        foreach ($products as [$sku, $name, $desc, $cat, $brand, $price, $stock]) {
-            if ($this->em->getRepository(Product::class)->findOneBy(['sku' => $sku])) {
+        foreach ($products as [$sku, $name, $desc, $cat, $subCat, $brand, $price, $stock, $couleurs]) {
+            $existing = $this->em->getRepository(Product::class)->findOneBy(['sku' => $sku]);
+            if ($existing) {
+                $existing->setSubCategory($subCat);
+                if (!empty($couleurs)) {
+                    $existing->setSpecifications(array_merge($existing->getSpecifications() ?? [], ['couleurs' => $couleurs]));
+                }
                 continue;
             }
             $p = new Product();
             $p->setSku($sku)->setName($name)->setDescription($desc)->setCategory($cat)
-                ->setBrand($brand)->setPriceMga($price)->setStockQuantity($stock)->setIsActive(true);
+                ->setSubCategory($subCat)->setBrand($brand)->setPriceMga($price)
+                ->setStockQuantity($stock)->setIsActive(true);
+            if (!empty($couleurs)) {
+                $p->setSpecifications(['couleurs' => $couleurs]);
+            }
             $this->em->persist($p);
         }
         $io->writeln('  <info>Products seeded.</info>');

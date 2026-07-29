@@ -37,6 +37,10 @@ class OrderItem
     #[Assert\PositiveOrZero]
     private int $unitPriceMga = 0;
 
+    /** Personnalisation : couleur, type de verre, ordonnance */
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $customization = null;
+
     public function getId(): ?int { return $this->id; }
 
     public function getOrder(): ?Order { return $this->order; }
@@ -59,6 +63,9 @@ class OrderItem
 
     public function getUnitPriceMga(): int { return $this->unitPriceMga; }
     public function setUnitPriceMga(int $p): self { $this->unitPriceMga = $p; return $this; }
+
+    public function getCustomization(): ?array { return $this->customization; }
+    public function setCustomization(?array $c): self { $this->customization = $c; return $this; }
 
     public function getLineTotalMga(): int
     {
