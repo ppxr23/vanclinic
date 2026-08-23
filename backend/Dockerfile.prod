@@ -43,6 +43,10 @@ RUN mkdir -p var/cache var/log config/jwt && \
 RUN mkdir -p /run/nginx
 COPY docker/nginx.prod.conf /etc/nginx/http.d/default.conf.template
 
+# Laisse passer les variables d'environnement injectées par Docker (compose
+# les efface par défaut pour les workers FPM sinon)
+COPY docker/fpm-clear-env.conf /usr/local/etc/php-fpm.d/zz-docker.conf
+
 # Supervisor (lance php-fpm + nginx ensemble)
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh
