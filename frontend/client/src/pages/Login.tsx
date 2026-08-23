@@ -1,19 +1,11 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth, ROLE_CONFIG } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import LanguageToggle from '@/components/LanguageToggle';
-import { Eye, EyeOff, Mail, Phone, ChevronDown, ChevronUp } from 'lucide-react';
+import { Eye, EyeOff, Mail, Phone } from 'lucide-react';
 
 const TEAL = '#1a9b8e'; const NAVY = '#1e3a5f'; const ORANGE = '#f0821d';
-
-const DEMO_ACCOUNTS = [
-  { email: 'docteur@vanclinic.mg',       password: 'Vanclinic2025!', name: 'Dr. Marie Rakoto',   role: 'ophtalmologue' as const, avatar: 'MR' },
-  { email: 'coordinateur@vanclinic.mg',  password: 'Vanclinic2025!', name: 'Rabe Coordinateur',  role: 'coordinateur'  as const, avatar: 'RC' },
-  { email: 'technicien@vanclinic.mg',    password: 'Vanclinic2025!', name: 'Hery Technicien',    role: 'technicien'    as const, avatar: 'HT' },
-  { email: 'agent@vanclinic.mg',         password: 'Vanclinic2025!', name: 'Vola Agent',         role: 'agent'         as const, avatar: 'VA' },
-  { email: 'patient@vanclinic.mg',       password: 'Patient2025!',   name: 'Jean Dupont',        role: 'patient'       as const, avatar: 'JD' },
-];
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -24,7 +16,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showDemo, setShowDemo] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -41,15 +32,6 @@ export default function Login() {
       setLocation(redirect);
     } else {
       setErrors({ identifier: 'Email ou mot de passe incorrect' });
-    }
-  };
-
-  const quickLogin = async (email: string, pw: string) => {
-    setLoading(true);
-    const redirect = await login(email, pw);
-    setLoading(false);
-    if (redirect) {
-      setLocation(redirect);
     }
   };
 
@@ -111,35 +93,6 @@ export default function Login() {
           {t('login.noAccount')}{' '}
           <button onClick={() => setLocation('/signup')} style={{ background: 'none', border: 'none', color: ORANGE, fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>{t('login.signUp')}</button>
         </p>
-
-        {/* COMPTES DEMO */}
-        <div style={{ marginTop: 28, border: `2px dashed ${TEAL}`, borderRadius: 14, overflow: 'hidden' }}>
-          <button onClick={() => setShowDemo(!showDemo)} style={{ width: '100%', padding: '12px 16px', background: '#e8f5f3', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 700, color: NAVY, fontSize: 14 }}>
-            <span>🔑 Comptes de démonstration</span>
-            {showDemo ? <ChevronUp size={16} color={TEAL} /> : <ChevronDown size={16} color={TEAL} />}
-          </button>
-          {showDemo && (
-            <div style={{ padding: '8px 12px 12px' }}>
-              <p style={{ fontSize: 11, color: '#6b8a87', marginBottom: 10, textAlign: 'center' }}>Cliquez pour vous connecter directement</p>
-              {DEMO_ACCOUNTS.map((acc) => {
-                const cfg = ROLE_CONFIG[acc.role];
-                return (
-                  <button key={acc.email} onClick={() => quickLogin(acc.email, acc.password)} disabled={loading}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', marginBottom: 6, background: 'white', border: `1.5px solid #d0e8e6`, borderRadius: 10, cursor: loading ? 'not-allowed' : 'pointer', transition: 'border-color 0.2s', textAlign: 'left' }}
-                    onMouseEnter={e => (e.currentTarget.style.borderColor = cfg.color)}
-                    onMouseLeave={e => (e.currentTarget.style.borderColor = '#d0e8e6')}>
-                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: cfg.color + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: cfg.color, flexShrink: 0 }}>{acc.avatar}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: NAVY, marginBottom: 1 }}>{acc.name}</p>
-                      <p style={{ fontSize: 11, color: '#6b8a87' }}>{acc.email}</p>
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 8, background: cfg.color + '22', color: cfg.color, flexShrink: 0 }}>{cfg.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

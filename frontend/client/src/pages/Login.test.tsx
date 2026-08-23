@@ -102,22 +102,4 @@ describe('Login', () => {
     fireEvent.click(toggleBtn);
     expect(pwInput).toHaveAttribute('type', 'text');
   });
-
-  it('affiche les comptes démo en cliquant sur le bouton', () => {
-    renderLogin();
-    fireEvent.click(screen.getByText(/Comptes de démonstration/));
-    expect(screen.getByText('Dr. Marie Rakoto')).toBeInTheDocument();
-    expect(screen.getByText('Rabe Coordinateur')).toBeInTheDocument();
-  });
-
-  it('connecte automatiquement via un compte démo et redirige vers /admin', async () => {
-    mockLogin.mockResolvedValue('/admin');
-    renderLogin();
-    fireEvent.click(screen.getByText(/Comptes de démonstration/));
-    fireEvent.click(screen.getByText('Dr. Marie Rakoto'));
-    await waitFor(() => {
-      expect(mockLogin).toHaveBeenCalledWith('docteur@vanclinic.mg', 'Vanclinic2025!');
-      expect(mockNavigate).toHaveBeenCalledWith('/admin');
-    });
-  });
 });
