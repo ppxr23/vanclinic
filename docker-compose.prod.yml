@@ -1,10 +1,8 @@
 services:
   traefik:
-    image: traefik:v3.1
+    image: traefik:v3.7.11
     container_name: vanclinic_traefik
     restart: unless-stopped
-    environment:
-      - DOCKER_API_VERSION=1.55
     command:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
