@@ -124,7 +124,7 @@ export default function AdminLayout({ children, currentPage }: Props) {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f9f8' }}>
       <Sidebar />
-      <div style={{ marginLeft: 240, flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ marginLeft: 240, flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         {/* Topbar */}
         <header style={{ height: 60, background: 'white', borderBottom: '1px solid #d0e8e6', display: 'flex', alignItems: 'center', padding: '0 24px', gap: 16, position: 'sticky', top: 0, zIndex: 50 }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: NAVY }}>{t(`admin.nav.${currentPage}`) || 'Admin'}</span>
@@ -136,7 +136,7 @@ export default function AdminLayout({ children, currentPage }: Props) {
           </button>
         </header>
         {/* Page content */}
-        <main style={{ flex: 1, padding: 24, maxWidth: 1400 }}>
+        <main style={{ flex: 1, width: '100%', minWidth: 0, boxSizing: 'border-box', padding: 24 }}>
           {children}
         </main>
       </div>
