@@ -97,7 +97,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+        <div className="dashboard-stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
           {[
             { label: t('dashboard.nextAppointments'), value: String(upcoming.length) },
             { label: t('dashboard.prescriptions'), value: String(prescriptionCount) },
@@ -158,7 +158,7 @@ export default function Dashboard() {
 
         {/* Quick actions */}
         <p style={{ fontSize: 16, fontWeight: 700, color: NAVY, marginBottom: 14 }}>{t('dashboard.quickActions')}</p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 24 }}>
+        <div className="dashboard-actions-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 24 }}>
           {[
             {
               label: t('dashboard.newAppointment'),

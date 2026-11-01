@@ -21,7 +21,7 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #d0e8e6', zIndex: 100 }}>
+    <nav className="app-bottom-nav" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #d0e8e6', zIndex: 100 }}>
       {isStaff && (
         <button
           onClick={() => setLocation('/admin')}
@@ -31,7 +31,7 @@ export default function BottomNav() {
           Retour à l'administration
         </button>
       )}
-      <div style={{ maxWidth: 500, margin: '0 auto', display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: 68 }}>
+      <div className="app-bottom-nav-items" style={{ maxWidth: 500, margin: '0 auto', display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: 68 }}>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location === item.path;

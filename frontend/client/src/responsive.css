@@ -1,0 +1,275 @@
+/* Phone and tablet adjustments; desktop layouts keep their existing styles. */
+@media (max-width: 768px) {
+  html,
+  body,
+  #root {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  img,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  .shop-header-inner {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .shop-header-inner h1 {
+    font-size: 16px !important;
+  }
+
+  .shop-header-actions {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 5px !important;
+  }
+
+  .shop-logout-button {
+    width: 40px;
+    height: 40px;
+    padding: 0 !important;
+    justify-content: center;
+    font-size: 0 !important;
+  }
+
+  .shop-buy-sheet {
+    height: min(82dvh, 680px) !important;
+    max-height: 82dvh !important;
+  }
+
+  .app-bottom-nav-items {
+    width: 100%;
+    max-width: none !important;
+  }
+
+  .admin-sidebar {
+    display: none !important;
+  }
+
+  .admin-layout-body {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+
+  .admin-topbar {
+    height: 56px !important;
+    gap: 8px !important;
+    padding: 0 10px !important;
+  }
+
+  .admin-topbar > span:first-of-type {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px !important;
+  }
+
+  .admin-mobile-menu-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+
+  .admin-topbar-role {
+    display: none;
+  }
+
+  .admin-topbar-logout {
+    width: 34px;
+    height: 34px;
+    padding: 0 !important;
+    justify-content: center;
+    overflow: hidden;
+    font-size: 0 !important;
+    flex: 0 0 auto;
+  }
+
+  .admin-main {
+    padding: 14px !important;
+  }
+
+  .admin-page-header {
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-start !important;
+    margin-bottom: 16px !important;
+  }
+
+  .admin-page-actions {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .admin-grid {
+    gap: 10px !important;
+  }
+
+  .admin-grid[data-cols="3"],
+  .admin-grid[data-cols="4"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .admin-modal-overlay {
+    align-items: flex-end !important;
+    padding: 8px !important;
+  }
+
+  .admin-modal {
+    max-height: 88dvh !important;
+    border-radius: 16px 16px 10px 10px !important;
+  }
+
+  .admin-mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(15, 35, 55, 0.4);
+  }
+
+  .admin-mobile-menu {
+    width: min(88vw, 340px);
+    height: 100%;
+    overflow-y: auto;
+    padding: 12px;
+    background: white;
+    box-shadow: 8px 0 28px rgba(0, 0, 0, 0.16);
+  }
+
+  .admin-mobile-menu-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 8px 14px;
+    color: #1e3a5f;
+    border-bottom: 1px solid #d0e8e6;
+  }
+
+  .admin-mobile-menu-heading button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: #6b8a87;
+    padding: 6px;
+  }
+
+  .admin-mobile-menu-section {
+    margin: 16px 8px 6px;
+    color: #6b8a87;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .admin-mobile-menu > div > button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 10px;
+    border: 0;
+    border-radius: 9px;
+    background: white;
+    color: #1e3a5f;
+    text-align: left;
+  }
+
+  .admin-mobile-menu > div > button.active {
+    background: #e8f5f3;
+    color: #1a9b8e;
+    font-weight: 700;
+  }
+
+  .admin-mobile-menu > div > button span {
+    flex: 1;
+  }
+
+  .admin-mobile-menu > div > button small {
+    padding: 2px 7px;
+    border-radius: 12px;
+    background: #f0821d;
+    color: white;
+  }
+}
+
+@media (max-width: 480px) {
+  .shop-header-inner {
+    align-items: flex-start !important;
+  }
+
+  .shop-header-actions {
+    justify-content: space-between;
+  }
+
+  .shop-header-actions > button,
+  .shop-header-actions > div > button {
+    flex-shrink: 0;
+  }
+
+  .admin-main {
+    padding: 10px !important;
+  }
+
+  .admin-grid[data-cols="2"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .dashboard-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .appointments-time-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .admin-modal-overlay > .admin-modal > div:nth-child(2) {
+    padding: 16px !important;
+  }
+
+  .admin-modal-overlay > .admin-modal > div:first-child {
+    padding: 16px !important;
+  }
+
+  .admin-modal-overlay > .admin-modal > div:last-child {
+    padding: 12px 16px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .shop-header-inner h1 {
+    font-size: 15px !important;
+  }
+
+  .shop-header-actions {
+    justify-content: flex-start;
+  }
+
+  .app-bottom-nav-items button span {
+    font-size: 9px !important;
+  }
+
+  .admin-topbar {
+    gap: 4px !important;
+    padding: 0 6px !important;
+  }
+
+  .admin-grid[data-cols="3"],
+  .admin-grid[data-cols="4"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}

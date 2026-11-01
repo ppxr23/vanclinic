@@ -32,12 +32,12 @@ export function Card({ children, style }: { children: React.ReactNode; style?: R
 
 export function PageHeader({ title, subtitle, children }: { title: string; subtitle?: string; children?: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+    <div className="admin-page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
       <div>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: NAVY }}>{title}</h1>
         {subtitle && <p style={{ fontSize: 13, color: '#6b8a87', marginTop: 2 }}>{subtitle}</p>}
       </div>
-      {children && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{children}</div>}
+      {children && <div className="admin-page-actions" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{children}</div>}
     </div>
   );
 }
@@ -123,13 +123,13 @@ export function BarChart({ data }: { data: { label: string; value: number; max: 
 }
 
 export function Grid({ cols = 4, children, style }: { cols?: number; children: React.ReactNode; style?: React.CSSProperties }) {
-  return <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16, ...style }}>{children}</div>;
+  return <div className="admin-grid" data-cols={cols} style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16, ...style }}>{children}</div>;
 }
 
 export function Modal({ title, onClose, onConfirm, confirmLabel = 'Confirmer', children }: { title: string; onClose: () => void; onConfirm?: () => void; confirmLabel?: string; children: React.ReactNode }) {
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+    <div className="admin-modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="admin-modal" style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #d0e8e6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: NAVY }}>{title}</span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b8a87', fontSize: 20, lineHeight: 1 }}>×</button>

@@ -189,7 +189,7 @@ function BuyModal({ product, onClose, onAdd }: {
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
 
       {/* sheet */}
-      <div style={{ position: 'relative', width: '96vw', height: 'min(90vh, 760px)', maxHeight: '90dvh', margin: '0 auto', background: 'white', borderRadius: '20px 20px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <div className="shop-buy-sheet" style={{ position: 'relative', width: '96vw', height: 'min(90vh, 760px)', maxHeight: '90dvh', margin: '0 auto', background: 'white', borderRadius: '20px 20px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {/* handle */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
           <div style={{ width: 40, height: 4, borderRadius: 2, background: '#d0e8e6' }} />
@@ -480,9 +480,9 @@ export default function Shop() {
 
       {/* header */}
       <div style={{ background: TEAL, padding: '14px 16px', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: 600, margin: '0 auto' }}>
+        <div className="shop-header-inner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: 600, margin: '0 auto' }}>
           <h1 style={{ color: 'white', fontSize: 18, fontWeight: 800 }}>Boutique VanClinic</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="shop-header-actions" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <LanguageToggle />
             <NotificationBell />
             <button onClick={() => { setView('orders'); fetchOrders(); }} title="Mes commandes"
@@ -494,7 +494,7 @@ export default function Shop() {
               <ShoppingCart size={18} color="white" />
               {cartCount > 0 && <span style={{ position: 'absolute', top: 4, right: 4, width: 18, height: 18, background: ORANGE, borderRadius: '50%', fontSize: 10, fontWeight: 700, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{cartCount}</span>}
             </button>
-            <button onClick={() => { logout(); setLocation('/login'); }} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: 12, color: 'white' }}>
+            <button className="shop-logout-button" onClick={() => { logout(); setLocation('/login'); }} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: 12, color: 'white' }}>
               <LogOut size={12} color="white" /> Déconnexion
             </button>
           </div>

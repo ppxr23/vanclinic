@@ -7,7 +7,7 @@ import { api } from '@/lib/api';
 import {
   LayoutGrid, Users, Calendar, FileText, Video, Map,
   ShoppingBag, Package, ClipboardList, BarChart2, TrendingUp,
-  UserCog, ScrollText, Settings, LogOut,
+  UserCog, ScrollText, Settings, LogOut, Menu, X,
 } from 'lucide-react';
 
 const TEAL = '#1a9b8e'; const NAVY = '#1e3a5f'; const ORANGE = '#f0821d';
@@ -38,6 +38,7 @@ export default function AdminLayout({ children, currentPage }: Props) {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const [navCounts, setNavCounts] = useState<NavCounts>({ patients: 0, appointments: 0, orders: 0, lowStock: 0 });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     api.get<NavCounts>('/admin/nav-counts').then(r => setNavCounts(r.data)).catch(() => {});
@@ -56,7 +57,7 @@ export default function AdminLayout({ children, currentPage }: Props) {
   });
 
   const Sidebar = () => (
-    <aside style={{ width: 240, background: TEAL, display: 'flex', flexDirection: 'column', height: '100vh', position: 'fixed', top: 0, left: 0, zIndex: 100, overflowY: 'auto' }}>
+    <aside className="admin-sidebar" style={{ width: 240, background: TEAL, display: 'flex', flexDirection: 'column', height: '100vh', position: 'fixed', top: 0, left: 0, zIndex: 100, overflowY: 'auto' }}>
       {/* Logo */}
       <div style={{ padding: '20px 16px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
         <img src="/New_Logo.png" alt="VanClinic" style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: '50%', background: 'white', padding: 2 }} onError={(e) => (e.currentTarget.style.display = 'none')} />
@@ -84,7 +85,7 @@ export default function AdminLayout({ children, currentPage }: Props) {
               };
               const badge = badgeMap[item.id] ?? 0;
               return (
-                <button key={item.id} onClick={() => setLocation(`/admin/${item.id}`)}
+                <button key={item.id} title={t(`admin.nav.${item.id}`)} onClick={() => setLocation(`/admin/${item.id}`)}
                   style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: 'none', fontFamily: 'inherit', fontSize: 13, fontWeight: 500, background: active ? 'rgba(255,255,255,0.15)' : 'transparent', color: 'white', transition: 'all 0.15s', marginBottom: 2 }}
                   onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
@@ -122,21 +123,37 @@ export default function AdminLayout({ children, currentPage }: Props) {
   );
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f9f8' }}>
+    <div className="admin-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f4f9f8' }}>
       <Sidebar />
-      <div style={{ marginLeft: 240, flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+      <div className="admin-layout-body" style={{ marginLeft: 240, flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         {/* Topbar */}
-        <header style={{ height: 60, background: 'white', borderBottom: '1px solid #d0e8e6', display: 'flex', alignItems: 'center', padding: '0 24px', gap: 16, position: 'sticky', top: 0, zIndex: 50 }}>
+        <header className="admin-topbar" style={{ height: 60, background: 'white', borderBottom: '1px solid #d0e8e6', display: 'flex', alignItems: 'center', padding: '0 24px', gap: 16, position: 'sticky', top: 0, zIndex: 50 }}>
+          <button className="admin-mobile-menu-toggle" onClick={() => setMobileMenuOpen(true)} aria-label="Ouvrir le menu" style={{ display: 'none', border: 'none', background: 'transparent', color: NAVY, padding: 6 }}><Menu size={21} /></button>
           <span style={{ fontSize: 16, fontWeight: 700, color: NAVY }}>{t(`admin.nav.${currentPage}`) || 'Admin'}</span>
           <div style={{ flex: 1 }} />
           <LanguageToggle variant="dark" />
-          <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: cfg.color + '22', color: cfg.color }}>{cfg.label}</span>
-          <button onClick={() => { logout(); setLocation('/login'); }} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 10, border: `1.5px solid #d0e8e6`, background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#6b8a87', fontFamily: 'inherit' }}>
+          <span className="admin-topbar-role" style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: cfg.color + '22', color: cfg.color }}>{cfg.label}</span>
+          <button className="admin-topbar-logout" onClick={() => { logout(); setLocation('/login'); }} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 10, border: `1.5px solid #d0e8e6`, background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#6b8a87', fontFamily: 'inherit' }}>
             <LogOut size={14} /> {t('admin.logout')}
           </button>
         </header>
+        {mobileMenuOpen && <div className="admin-mobile-menu-overlay" onClick={() => setMobileMenuOpen(false)}>
+          <nav className="admin-mobile-menu" onClick={e => e.stopPropagation()}>
+            <div className="admin-mobile-menu-heading"><strong>Navigation</strong><button onClick={() => setMobileMenuOpen(false)} aria-label="Fermer le menu"><X size={20} /></button></div>
+            {Object.entries(sections).map(([section, items]) => <div key={section}>
+              <p className="admin-mobile-menu-section">{t(`admin.sections.${section}`)}</p>
+              {items.map(item => {
+                const Icon = item.icon;
+                return <button key={item.id} className={currentPage === item.id ? 'active' : ''} onClick={() => { setMobileMenuOpen(false); setLocation(`/admin/${item.id}`); }}>
+                  <Icon size={17} /><span>{t(`admin.nav.${item.id}`)}</span>
+                  {item.id === 'orders' && navCounts.orders > 0 && <small>{navCounts.orders}</small>}
+                </button>;
+              })}
+            </div>)}
+          </nav>
+        </div>}
         {/* Page content */}
-        <main style={{ flex: 1, width: '100%', minWidth: 0, boxSizing: 'border-box', padding: 24 }}>
+        <main className="admin-main" style={{ flex: 1, width: '100%', minWidth: 0, boxSizing: 'border-box', padding: 24 }}>
           {children}
         </main>
       </div>

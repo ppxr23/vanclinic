@@ -214,7 +214,7 @@ export default function Appointments() {
         {/* DATE */}
         {step === 'date' && (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+            <div className="appointments-date-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
               {dates.map((date) => (
                 <button key={date} onClick={() => setSelectedDate(date)} style={{ background: selectedDate === date ? TEAL : 'white', border: `2px solid ${selectedDate === date ? TEAL : '#d0e8e6'}`, borderRadius: 14, padding: '14px 10px', cursor: 'pointer', transition: 'all 0.2s' }}>
                   <p style={{ fontWeight: 700, color: selectedDate === date ? 'white' : NAVY, fontSize: 14 }}>{new Date(date).toLocaleDateString('fr-FR', { weekday: 'short' })}</p>
@@ -229,7 +229,7 @@ export default function Appointments() {
         {/* TIME */}
         {step === 'time' && (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
+            <div className="appointments-time-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
               {times.map((time) => (
                 <button key={time} onClick={() => setSelectedTime(time)} style={{ background: selectedTime === time ? TEAL : 'white', border: `2px solid ${selectedTime === time ? TEAL : '#d0e8e6'}`, borderRadius: 12, padding: '12px 0', cursor: 'pointer', transition: 'all 0.2s' }}>
                   <Clock size={14} color={selectedTime === time ? 'white' : TEAL} style={{ margin: '0 auto 4px' }} />
