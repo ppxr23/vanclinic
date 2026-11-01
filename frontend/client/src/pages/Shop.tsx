@@ -189,7 +189,7 @@ function BuyModal({ product, onClose, onAdd }: {
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
 
       {/* sheet */}
-      <div style={{ position: 'relative', width: 'min(100%, 600px)', height: 'min(90vh, 760px)', maxHeight: '90dvh', margin: '0 auto', background: 'white', borderRadius: '20px 20px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <div style={{ position: 'relative', width: '96vw', height: 'min(90vh, 760px)', maxHeight: '90dvh', margin: '0 auto', background: 'white', borderRadius: '20px 20px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {/* handle */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
           <div style={{ width: 40, height: 4, borderRadius: 2, background: '#d0e8e6' }} />
@@ -320,7 +320,7 @@ function BuyModal({ product, onClose, onAdd }: {
         </div>
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 76, zIndex: 5, padding: '12px 16px max(12px, env(safe-area-inset-bottom))', boxSizing: 'border-box', background: 'white', borderTop: '1px solid #e8f5f3', boxShadow: '0 -4px 12px rgba(30,58,95,0.12)' }}>
           <button onClick={handleConfirm} style={{
-            display: 'block', width: '100%', maxWidth: 568, minHeight: 50, margin: '0 auto', background: ORANGE, color: 'white', border: 'none',
+            display: 'block', width: '100%', minHeight: 50, margin: '0 auto', background: ORANGE, color: 'white', border: 'none',
             borderRadius: 14, fontSize: 16, fontWeight: 700, cursor: 'pointer',
           }}>
             Ajouter au panier — {(product.priceMga * qty).toLocaleString()} Ar
