@@ -318,7 +318,7 @@ function BuyModal({ product, onClose, onAdd }: {
           )}
 
         </div>
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 5, padding: '12px 16px max(12px, env(safe-area-inset-bottom))', boxSizing: 'border-box', background: 'white', borderTop: '1px solid #e8f5f3', boxShadow: '0 -4px 12px rgba(30,58,95,0.12)' }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 76, zIndex: 5, padding: '12px 16px max(12px, env(safe-area-inset-bottom))', boxSizing: 'border-box', background: 'white', borderTop: '1px solid #e8f5f3', boxShadow: '0 -4px 12px rgba(30,58,95,0.12)' }}>
           <button onClick={handleConfirm} style={{
             display: 'block', width: '100%', maxWidth: 568, minHeight: 50, margin: '0 auto', background: ORANGE, color: 'white', border: 'none',
             borderRadius: 14, fontSize: 16, fontWeight: 700, cursor: 'pointer',
