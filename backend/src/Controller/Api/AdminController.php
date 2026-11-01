@@ -245,6 +245,7 @@ class AdminController extends AbstractController
                 ->setDescription($data['description'] ?? null)
                 ->setCategory($category)
                 ->setBrand($data['brand'] ?? null)
+                ->setSpecifications(is_array($data['specifications'] ?? null) ? $data['specifications'] : null)
                 ->setPriceMga((int) $data['priceMga'])
                 ->setStockQuantity((int) ($data['stockQuantity'] ?? 0))
                 ->setIsActive(true);

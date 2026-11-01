@@ -658,7 +658,7 @@ export function ShopPage() {
   const { data: products, loading, error, reload } = useApi<ApiProduct[]>('/products');
   const [showModal, setShowModal] = useState(false);
   const [imagesProduct, setImagesProduct] = useState<ApiProduct | null>(null);
-  const [form, setForm] = useState({ sku: '', name: '', description: '', category: 'eyeglasses', brand: '', priceMga: '', stockQuantity: '0' });
+  const [form, setForm] = useState({ sku: '', name: '', description: '', category: 'eyeglasses', genre: 'homme', brand: '', priceMga: '', stockQuantity: '0' });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deletingIdx, setDeletingIdx] = useState<number | null>(null);
@@ -667,9 +667,10 @@ export function ShopPage() {
   const handleCreate = async () => {
     setSaving(true);
     try {
-      await api.post('/admin/products', { ...form, priceMga: Number(form.priceMga), stockQuantity: Number(form.stockQuantity) });
+      const specifications = ['eyeglasses', 'sunglasses'].includes(form.category) ? { genre: form.genre } : {};
+      await api.post('/admin/products', { ...form, specifications, priceMga: Number(form.priceMga), stockQuantity: Number(form.stockQuantity) });
       setShowModal(false);
-      setForm({ sku: '', name: '', description: '', category: 'eyeglasses', brand: '', priceMga: '', stockQuantity: '0' });
+      setForm({ sku: '', name: '', description: '', category: 'eyeglasses', genre: 'homme', brand: '', priceMga: '', stockQuantity: '0' });
       reload();
     } catch (e: any) {
       alert(e.response?.data?.error || 'Erreur');
@@ -763,6 +764,15 @@ export function ShopPage() {
               {PRODUCT_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </Select>
           </FormGroup>
+          {(form.category === 'eyeglasses' || form.category === 'sunglasses') && (
+            <FormGroup label="Pour quel public ?">
+              <Select value={form.genre} onChange={e => setForm(f => ({ ...f, genre: e.target.value }))}>
+                <option value="homme">Homme</option>
+                <option value="femme">Femme</option>
+                <option value="enfant">Enfant</option>
+              </Select>
+            </FormGroup>
+          )}
           <Grid cols={2} style={{ gap: 12 }}>
             <FormGroup label={t('admin.pages.shop.modal.price')}><Input type="number" value={form.priceMga} onChange={e => setForm(f => ({ ...f, priceMga: e.target.value }))} placeholder="45000" min="0" /></FormGroup>
             <FormGroup label={t('admin.pages.shop.modal.stockQty')}><Input type="number" value={form.stockQuantity} onChange={e => setForm(f => ({ ...f, stockQuantity: e.target.value }))} min="0" /></FormGroup>

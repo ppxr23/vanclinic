@@ -30,15 +30,7 @@ const GROUP_LABELS: Record<MainGroup, string> = {
   accessoires: 'Accessoires',
 };
 
-const SUB_CATS: Record<MainGroup, { id: string; label: string }[]> = {
-  lunettes: [
-    { id: '', label: 'Tous' },
-    { id: 'monture', label: 'Montures de vue' },
-    { id: 'soleil', label: 'Soleil' },
-    { id: 'sport', label: 'Sport' },
-    { id: 'lecture', label: 'Lecture' },
-    { id: 'enfant', label: 'Enfant' },
-  ],
+const SUB_CATS: Record<Exclude<MainGroup, 'lunettes'>, { id: string; label: string }[]> = {
   verres: [
     { id: '', label: 'Tous' },
     { id: 'unifocaux', label: 'Unifocaux' },
@@ -88,7 +80,6 @@ interface Prescription {
 }
 
 interface Customization {
-  frameGender?: 'homme' | 'femme';
   color?: string;
   lensType?: string;
   prescription?: Prescription;
@@ -104,7 +95,7 @@ interface Product {
   priceMga: number;
   stockQuantity?: number;
   images?: string[];
-  specifications?: { couleurs?: string[]; [k: string]: unknown };
+  specifications?: { couleurs?: string[]; genre?: string; [k: string]: unknown };
 }
 
 interface CartItem {
@@ -137,7 +128,7 @@ interface Order {
 }
 
 function makeUid(id: number, c?: Customization) {
-  return `${id}-${c?.frameGender ?? ''}-${c?.color ?? ''}-${c?.lensType ?? ''}-${c?.prescription ? JSON.stringify(c.prescription) : ''}`;
+  return `${id}-${c?.color ?? ''}-${c?.lensType ?? ''}-${c?.prescription ? JSON.stringify(c.prescription) : ''}`;
 }
 
 function loadCart(): CartItem[] {
@@ -164,9 +155,7 @@ function BuyModal({ product, onClose, onAdd }: {
 }) {
   const couleurs = product.specifications?.couleurs ?? [];
   const canAddLens = product.category === 'eyeglasses';
-  const canChooseFrameGender = product.category === 'eyeglasses' || product.category === 'sunglasses';
 
-  const [frameGender, setFrameGender] = useState<'homme' | 'femme'>('homme');
   const [color, setColor] = useState(couleurs[0] ?? '');
   const [qty, setQty] = useState(1);
   const [addLens, setAddLens] = useState(false);
@@ -176,7 +165,6 @@ function BuyModal({ product, onClose, onAdd }: {
 
   const handleConfirm = () => {
     const customization: Customization = {};
-    if (canChooseFrameGender) customization.frameGender = frameGender;
     if (color) customization.color = color;
     if (canAddLens && addLens) {
       customization.lensType = lensType;
@@ -225,24 +213,6 @@ function BuyModal({ product, onClose, onAdd }: {
         </div>
 
         <div style={{ padding: '16px' }}>
-          {canChooseFrameGender && (
-            <div style={{ marginBottom: 18 }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: NAVY, marginBottom: 10 }}>Monture pour :</p>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {(['homme', 'femme'] as const).map(gender => (
-                  <button key={gender} type="button" aria-pressed={frameGender === gender}
-                    onClick={() => setFrameGender(gender)}
-                    style={{ flex: 1, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13,
-                      color: frameGender === gender ? 'white' : NAVY,
-                      background: frameGender === gender ? TEAL : 'white',
-                      border: `1.5px solid ${frameGender === gender ? TEAL : '#d0e8e6'}` }}>
-                    {gender === 'homme' ? 'Homme' : 'Femme'}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* color */}
           {couleurs.length > 0 && (
             <div style={{ marginBottom: 18 }}>
@@ -397,6 +367,8 @@ export default function Shop() {
 
   const [view, setView] = useState<View>('catalog');
   const [group, setGroup] = useState<MainGroup>('lunettes');
+  const [eyewearType, setEyewearType] = useState<'eyeglasses' | 'sunglasses'>('eyeglasses');
+  const [eyewearGender, setEyewearGender] = useState<'all' | 'homme' | 'femme' | 'enfant'>('all');
   const [subCat, setSubCat] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -427,9 +399,11 @@ export default function Shop() {
   useEffect(() => { localStorage.setItem('vanclinic_cart', JSON.stringify(cart)); }, [cart]);
 
   const filtered = products.filter(p => {
-    const inGroup = GROUP_CATEGORIES[group].includes(p.category);
-    const inSub = !subCat || p.subCategory === subCat;
-    return inGroup && inSub;
+    const productGender = p.specifications?.genre ?? (p.subCategory === 'enfant' ? 'enfant' : undefined);
+    const inGroup = group === 'lunettes'
+      ? p.category === eyewearType && (eyewearGender === 'all' || productGender === eyewearGender)
+      : GROUP_CATEGORIES[group].includes(p.category) && (!subCat || p.subCategory === subCat);
+    return inGroup;
   });
 
   const addToCart = (item: CartItem) => {
@@ -530,7 +504,7 @@ export default function Shop() {
             {/* main tabs */}
             <div style={{ display: 'flex', background: 'white', borderRadius: '0 0 16px 16px', marginBottom: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
               {(Object.keys(GROUP_LABELS) as MainGroup[]).map(g => (
-                <button key={g} onClick={() => { setGroup(g); setSubCat(''); }} style={{
+                <button key={g} onClick={() => { setGroup(g); setSubCat(''); setEyewearGender('all'); }} style={{
                   flex: 1, padding: '12px 4px', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700,
                   background: 'none', color: group === g ? TEAL : '#9ab0ae',
                   borderBottom: group === g ? `3px solid ${TEAL}` : '3px solid transparent',
@@ -539,18 +513,53 @@ export default function Shop() {
               ))}
             </div>
 
-            {/* sub-cats */}
-            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, marginBottom: 14 }}>
-              {SUB_CATS[group].map(sc => (
-                <button key={sc.id} onClick={() => setSubCat(sc.id)} style={{
-                  padding: '6px 14px', borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: 12,
-                  whiteSpace: 'nowrap', flexShrink: 0,
-                  background: subCat === sc.id ? NAVY : 'white',
-                  color: subCat === sc.id ? 'white' : '#6b8a87',
-                  border: subCat === sc.id ? 'none' : '1px solid #d0e8e6',
-                }}>{sc.label}</button>
-              ))}
-            </div>
+            {group === 'lunettes' ? (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, margin: '4px 0 14px' }}>
+                  {([
+                    { id: 'eyeglasses' as const, title: 'Lunettes de vue', icon: '👓', color: '#e9f6f4' },
+                    { id: 'sunglasses' as const, title: 'Lunettes de soleil', icon: '🕶️', color: '#fff2df' },
+                  ]).map(option => {
+                    const active = eyewearType === option.id;
+                    const count = products.filter(p => p.category === option.id).length;
+                    return <button key={option.id} onClick={() => setEyewearType(option.id)} aria-pressed={active}
+                      style={{ textAlign: 'left', padding: '13px 14px', borderRadius: 14, border: `2px solid ${active ? TEAL : 'transparent'}`, background: active ? option.color : 'white', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'all .18s' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 24 }}>{option.icon}</span>
+                        <span style={{ fontSize: 10, color: active ? TEAL : '#9ab0ae', fontWeight: 700 }}>{count} modèle{count > 1 ? 's' : ''}</span>
+                      </div>
+                      <p style={{ marginTop: 8, fontSize: 12, fontWeight: 800, color: NAVY }}>{option.title}</p>
+                    </button>;
+                  })}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, overflowX: 'auto', paddingBottom: 4, marginBottom: 14 }}>
+                  <span style={{ flexShrink: 0, fontSize: 11, color: '#6b8a87', fontWeight: 700 }}>Pour :</span>
+                  {([
+                    { id: 'all' as const, label: 'Tous' },
+                    { id: 'homme' as const, label: 'Homme' },
+                    { id: 'femme' as const, label: 'Femme' },
+                    { id: 'enfant' as const, label: 'Enfant' },
+                  ]).map(option => (
+                    <button key={option.id} onClick={() => setEyewearGender(option.id)} aria-pressed={eyewearGender === option.id}
+                      style={{ padding: '7px 13px', borderRadius: 18, cursor: 'pointer', fontWeight: 700, fontSize: 11, whiteSpace: 'nowrap', flexShrink: 0,
+                        background: eyewearGender === option.id ? NAVY : 'white', color: eyewearGender === option.id ? 'white' : '#6b8a87',
+                        border: eyewearGender === option.id ? `1px solid ${NAVY}` : '1px solid #d0e8e6', transition: 'all .15s' }}>{option.label}</button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, marginBottom: 14 }}>
+                {SUB_CATS[group].map(sc => (
+                  <button key={sc.id} onClick={() => setSubCat(sc.id)} style={{
+                    padding: '6px 14px', borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: 12,
+                    whiteSpace: 'nowrap', flexShrink: 0,
+                    background: subCat === sc.id ? NAVY : 'white',
+                    color: subCat === sc.id ? 'white' : '#6b8a87',
+                    border: subCat === sc.id ? 'none' : '1px solid #d0e8e6',
+                  }}>{sc.label}</button>
+                ))}
+              </div>
+            )}
 
             {loading ? (
               <p style={{ textAlign: 'center', color: '#6b8a87', padding: 32 }}>Chargement...</p>
@@ -587,7 +596,6 @@ export default function Shop() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                       <div style={{ flex: 1 }}>
                         <p style={{ fontWeight: 700, color: NAVY, fontSize: 13 }}>{item.name}</p>
-                        {item.customization?.frameGender && <p style={{ fontSize: 11, color: '#6b8a87' }}>Monture : {item.customization.frameGender === 'homme' ? 'Homme' : 'Femme'}</p>}
                         {item.customization?.color && <p style={{ fontSize: 11, color: '#6b8a87' }}>Couleur : {item.customization.color}</p>}
                         {item.customization?.lensType && <p style={{ fontSize: 11, color: TEAL }}>Verres : {LENS_TYPES.find(l => l.id === item.customization?.lensType)?.label}</p>}
                         {pxSummary(item.customization) && <p style={{ fontSize: 10, color: '#9ab0ae', marginTop: 2 }}>{pxSummary(item.customization)}</p>}

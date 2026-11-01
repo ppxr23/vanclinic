@@ -10,8 +10,12 @@ const mockApi = api as unknown as {
 };
 
 const PRODUCTS = [
-  { id: 1, name: 'Lunettes de vue classiques', category: 'eyeglasses', subCategory: 'monture', priceMga: 150000, description: 'Monture élégante' },
-  { id: 2, name: 'Lunettes de soleil UV', category: 'sunglasses', priceMga: 200000, description: 'Protection maximale' },
+  { id: 1, name: 'Lunettes de vue classiques', category: 'eyeglasses', priceMga: 150000, description: 'Monture élégante', specifications: { genre: 'homme' } },
+  { id: 2, name: 'Lunettes de soleil UV', category: 'sunglasses', priceMga: 200000, description: 'Protection maximale', specifications: { genre: 'femme' } },
+  { id: 4, name: 'Monture enfant', category: 'eyeglasses', priceMga: 100000, specifications: { genre: 'enfant' } },
+  { id: 5, name: 'Monture femme', category: 'eyeglasses', priceMga: 125000, specifications: { genre: 'femme' } },
+  { id: 6, name: 'Solaire homme', category: 'sunglasses', priceMga: 110000, specifications: { genre: 'homme' } },
+  { id: 7, name: 'Solaire enfant', category: 'sunglasses', priceMga: 90000, specifications: { genre: 'enfant' } },
   { id: 3, name: 'Étui de rangement', category: 'accessories', priceMga: 25000, description: 'Protection robuste' },
 ];
 
@@ -57,7 +61,7 @@ describe('Shop', () => {
   it('affiche les produits depuis l\'API', async () => {
     render(<Shop />);
     await waitFor(() => {
-      expect(screen.getAllByTestId('product-card').length).toBe(2);
+      expect(screen.getAllByTestId('product-card').length).toBe(3);
       expect(screen.getByText('Lunettes de vue classiques')).toBeInTheDocument();
     });
   });
@@ -70,13 +74,14 @@ describe('Shop', () => {
     });
   });
 
-  it('filtre les produits par catégorie eyeglasses', async () => {
+  it('passe des lunettes de vue aux lunettes de soleil', async () => {
     render(<Shop />);
     await waitFor(() => screen.getAllByTestId('product-card'));
-    fireEvent.click(screen.getByText('Montures de vue'));
+    fireEvent.click(screen.getByText('Lunettes de soleil'));
     await waitFor(() => {
-      expect(screen.getAllByTestId('product-card').length).toBe(1);
-      expect(screen.queryByText('Lunettes de soleil UV')).not.toBeInTheDocument();
+      expect(screen.getAllByTestId('product-card').length).toBe(3);
+      expect(screen.queryByText('Lunettes de vue classiques')).not.toBeInTheDocument();
+      expect(screen.getByText('Lunettes de soleil UV')).toBeInTheDocument();
     });
   });
 
@@ -92,14 +97,14 @@ describe('Shop', () => {
     });
   });
 
-  it('permet de choisir une monture pour femme et conserve le choix au panier', async () => {
+  it('filtre les montures de vue par public', async () => {
     render(<Shop />);
     await waitFor(() => screen.getAllByTestId('product-card'));
-    fireEvent.click(screen.getAllByRole('button', { name: 'Acheter' })[0]);
     fireEvent.click(screen.getByRole('button', { name: 'Femme' }));
-    fireEvent.click(screen.getByText(/Ajouter au panier/));
-    await openCart();
-    expect(screen.getByText('Monture : Femme')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getAllByTestId('product-card')).toHaveLength(1);
+      expect(screen.getByText('Monture femme')).toBeInTheDocument();
+    });
   });
 
   it('le panier s\'ouvre et affiche l\'article ajouté', async () => {
