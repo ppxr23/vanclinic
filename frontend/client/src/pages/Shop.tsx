@@ -189,7 +189,7 @@ function BuyModal({ product, onClose, onAdd }: {
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
 
       {/* sheet */}
-      <div style={{ position: 'relative', background: 'white', borderRadius: '20px 20px 0 0', padding: '0 0 32px', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div style={{ position: 'relative', background: 'white', borderRadius: '20px 20px 0 0', height: '90vh', maxHeight: '90dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {/* handle */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
           <div style={{ width: 40, height: 4, borderRadius: 2, background: '#d0e8e6' }} />
@@ -212,7 +212,7 @@ function BuyModal({ product, onClose, onAdd }: {
           </button>
         </div>
 
-        <div style={{ padding: '16px' }}>
+        <div style={{ padding: '16px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
           {/* color */}
           {couleurs.length > 0 && (
             <div style={{ marginBottom: 18 }}>
@@ -317,8 +317,10 @@ function BuyModal({ product, onClose, onAdd }: {
             </div>
           )}
 
+        </div>
+        <div style={{ flexShrink: 0, padding: '12px 16px', background: 'white', borderTop: '1px solid #e8f5f3', boxShadow: '0 -4px 12px rgba(30,58,95,0.06)' }}>
           <button onClick={handleConfirm} style={{
-            width: '100%', height: 50, background: ORANGE, color: 'white', border: 'none',
+            width: '100%', minHeight: 50, background: ORANGE, color: 'white', border: 'none',
             borderRadius: 14, fontSize: 16, fontWeight: 700, cursor: 'pointer',
           }}>
             Ajouter au panier — {(product.priceMga * qty).toLocaleString()} Ar
@@ -369,6 +371,7 @@ export default function Shop() {
   const [group, setGroup] = useState<MainGroup>('lunettes');
   const [eyewearType, setEyewearType] = useState<'eyeglasses' | 'sunglasses'>('eyeglasses');
   const [eyewearGender, setEyewearGender] = useState<'all' | 'homme' | 'femme' | 'enfant'>('all');
+  const [eyewearVision, setEyewearVision] = useState<'all' | 'loin' | 'pres'>('all');
   const [subCat, setSubCat] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -401,7 +404,9 @@ export default function Shop() {
   const filtered = products.filter(p => {
     const productGender = p.specifications?.genre ?? (p.subCategory === 'enfant' ? 'enfant' : undefined);
     const inGroup = group === 'lunettes'
-      ? p.category === eyewearType && (eyewearGender === 'all' || productGender === eyewearGender)
+      ? p.category === eyewearType
+        && (eyewearGender === 'all' || productGender === eyewearGender)
+        && (eyewearType !== 'eyeglasses' || eyewearVision === 'all' || p.specifications?.vision === eyewearVision)
       : GROUP_CATEGORIES[group].includes(p.category) && (!subCat || p.subCategory === subCat);
     return inGroup;
   });
@@ -522,7 +527,7 @@ export default function Shop() {
                   ]).map(option => {
                     const active = eyewearType === option.id;
                     const count = products.filter(p => p.category === option.id).length;
-                    return <button key={option.id} onClick={() => setEyewearType(option.id)} aria-pressed={active}
+                    return <button key={option.id} onClick={() => { setEyewearType(option.id); setEyewearVision('all'); }} aria-pressed={active}
                       style={{ textAlign: 'left', padding: '13px 14px', borderRadius: 14, border: `2px solid ${active ? TEAL : 'transparent'}`, background: active ? option.color : 'white', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'all .18s' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: 24 }}>{option.icon}</span>
@@ -532,6 +537,24 @@ export default function Shop() {
                     </button>;
                   })}
                 </div>
+                {eyewearType === 'eyeglasses' && (
+                  <div style={{ marginBottom: 10 }}>
+                    <p style={{ fontSize: 10, color: '#6b8a87', fontWeight: 700, margin: '0 0 6px 2px' }}>TYPE DE VUE</p>
+                    <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2 }}>
+                      {([
+                        { id: 'all' as const, label: 'Toutes' },
+                        { id: 'loin' as const, label: 'Vue de loin' },
+                        { id: 'pres' as const, label: 'Vue de près' },
+                      ]).map(option => (
+                        <button key={option.id} onClick={() => setEyewearVision(option.id)} aria-pressed={eyewearVision === option.id}
+                          style={{ padding: '7px 12px', borderRadius: 18, cursor: 'pointer', fontWeight: 700, fontSize: 11, whiteSpace: 'nowrap', flexShrink: 0,
+                            background: eyewearVision === option.id ? '#e7f5f2' : 'white', color: eyewearVision === option.id ? TEAL : '#6b8a87',
+                            border: `1px solid ${eyewearVision === option.id ? TEAL : '#d0e8e6'}` }}>{option.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <p style={{ fontSize: 10, color: '#6b8a87', fontWeight: 700, margin: '0 0 6px 2px' }}>PUBLIC</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, overflowX: 'auto', paddingBottom: 4, marginBottom: 14 }}>
                   <span style={{ flexShrink: 0, fontSize: 11, color: '#6b8a87', fontWeight: 700 }}>Pour :</span>
                   {([

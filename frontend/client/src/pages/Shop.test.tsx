@@ -10,10 +10,10 @@ const mockApi = api as unknown as {
 };
 
 const PRODUCTS = [
-  { id: 1, name: 'Lunettes de vue classiques', category: 'eyeglasses', priceMga: 150000, description: 'Monture élégante', specifications: { genre: 'homme' } },
+  { id: 1, name: 'Lunettes de vue classiques', category: 'eyeglasses', priceMga: 150000, description: 'Monture élégante', specifications: { genre: 'homme', vision: 'loin' } },
   { id: 2, name: 'Lunettes de soleil UV', category: 'sunglasses', priceMga: 200000, description: 'Protection maximale', specifications: { genre: 'femme' } },
-  { id: 4, name: 'Monture enfant', category: 'eyeglasses', priceMga: 100000, specifications: { genre: 'enfant' } },
-  { id: 5, name: 'Monture femme', category: 'eyeglasses', priceMga: 125000, specifications: { genre: 'femme' } },
+  { id: 4, name: 'Monture enfant', category: 'eyeglasses', priceMga: 100000, specifications: { genre: 'enfant', vision: 'pres' } },
+  { id: 5, name: 'Monture femme', category: 'eyeglasses', priceMga: 125000, specifications: { genre: 'femme', vision: 'pres' } },
   { id: 6, name: 'Solaire homme', category: 'sunglasses', priceMga: 110000, specifications: { genre: 'homme' } },
   { id: 7, name: 'Solaire enfant', category: 'sunglasses', priceMga: 90000, specifications: { genre: 'enfant' } },
   { id: 3, name: 'Étui de rangement', category: 'accessories', priceMga: 25000, description: 'Protection robuste' },
@@ -104,6 +104,17 @@ describe('Shop', () => {
     await waitFor(() => {
       expect(screen.getAllByTestId('product-card')).toHaveLength(1);
       expect(screen.getByText('Monture femme')).toBeInTheDocument();
+    });
+  });
+
+  it('filtre les lunettes de vue par vision de près ou de loin', async () => {
+    render(<Shop />);
+    await waitFor(() => screen.getAllByTestId('product-card'));
+    fireEvent.click(screen.getByRole('button', { name: 'Vue de près' }));
+    await waitFor(() => {
+      expect(screen.getAllByTestId('product-card')).toHaveLength(2);
+      expect(screen.getByText('Monture enfant')).toBeInTheDocument();
+      expect(screen.queryByText('Lunettes de vue classiques')).not.toBeInTheDocument();
     });
   });
 

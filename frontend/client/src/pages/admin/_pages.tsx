@@ -658,7 +658,7 @@ export function ShopPage() {
   const { data: products, loading, error, reload } = useApi<ApiProduct[]>('/products');
   const [showModal, setShowModal] = useState(false);
   const [imagesProduct, setImagesProduct] = useState<ApiProduct | null>(null);
-  const [form, setForm] = useState({ sku: '', name: '', description: '', category: 'eyeglasses', genre: 'homme', brand: '', priceMga: '', stockQuantity: '0' });
+  const [form, setForm] = useState({ sku: '', name: '', description: '', category: 'eyeglasses', genre: 'homme', vision: 'all', brand: '', priceMga: '', stockQuantity: '0' });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deletingIdx, setDeletingIdx] = useState<number | null>(null);
@@ -667,10 +667,12 @@ export function ShopPage() {
   const handleCreate = async () => {
     setSaving(true);
     try {
-      const specifications = ['eyeglasses', 'sunglasses'].includes(form.category) ? { genre: form.genre } : {};
+      const specifications = ['eyeglasses', 'sunglasses'].includes(form.category)
+        ? { genre: form.genre, ...(form.category === 'eyeglasses' && form.vision !== 'all' ? { vision: form.vision } : {}) }
+        : {};
       await api.post('/admin/products', { ...form, specifications, priceMga: Number(form.priceMga), stockQuantity: Number(form.stockQuantity) });
       setShowModal(false);
-      setForm({ sku: '', name: '', description: '', category: 'eyeglasses', genre: 'homme', brand: '', priceMga: '', stockQuantity: '0' });
+      setForm({ sku: '', name: '', description: '', category: 'eyeglasses', genre: 'homme', vision: 'all', brand: '', priceMga: '', stockQuantity: '0' });
       reload();
     } catch (e: any) {
       alert(e.response?.data?.error || 'Erreur');
@@ -770,6 +772,15 @@ export function ShopPage() {
                 <option value="homme">Homme</option>
                 <option value="femme">Femme</option>
                 <option value="enfant">Enfant</option>
+              </Select>
+            </FormGroup>
+          )}
+          {form.category === 'eyeglasses' && (
+            <FormGroup label="Type de vue">
+              <Select value={form.vision} onChange={e => setForm(f => ({ ...f, vision: e.target.value }))}>
+                <option value="all">Non précisé / tous types</option>
+                <option value="loin">Vue de loin</option>
+                <option value="pres">Vue de près</option>
               </Select>
             </FormGroup>
           )}
