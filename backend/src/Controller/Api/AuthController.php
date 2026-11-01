@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use App\Entity\User;
 use App\Service\AuthService;
 use Nelmio\ApiDocBundle\Annotation\Security;
@@ -56,8 +57,10 @@ class AuthController extends AbstractController
             $result = $this->authService->registerPatient($data);
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], 400);
+        } catch (UniqueConstraintViolationException) {
+            return $this->json(['error' => 'Cette adresse e-mail ou ce numéro de téléphone est déjà utilisé.'], 409);
         } catch (\Throwable $e) {
-            return $this->json(['error' => 'Erreur lors de la création du compte.', 'details' => $e->getMessage()], 500);
+            return $this->json(['error' => 'Impossible de créer le compte pour le moment. Réessayez dans quelques instants.'], 500);
         }
 
         return $this->json([
