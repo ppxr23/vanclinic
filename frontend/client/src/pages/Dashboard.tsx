@@ -79,15 +79,15 @@ export default function Dashboard() {
     <div style={{ minHeight: '100vh', background: '#f4f9f8', paddingBottom: 90 }}>
       {/* Header */}
       <div style={{ background: TEAL, padding: '20px 20px 24px', borderRadius: '0 0 28px 28px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="dashboard-header-top" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div className="dashboard-user" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: 'white' }}>{initials}</div>
             <div>
               <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>{t('dashboard.welcome')}</p>
-              <p style={{ color: 'white', fontSize: 18, fontWeight: 700 }} data-testid="user-name">{displayName}</p>
+              <p className="dashboard-user-name" style={{ color: 'white', fontSize: 18, fontWeight: 700 }} data-testid="user-name">{displayName}</p>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <div className="dashboard-header-actions" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <LanguageToggle />
             <NotificationBell />
             <button onClick={() => { logout(); setLocation('/login'); }} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.15)', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'white', fontFamily: 'inherit' }}>
