@@ -88,6 +88,7 @@ interface Prescription {
 }
 
 interface Customization {
+  frameGender?: 'homme' | 'femme';
   color?: string;
   lensType?: string;
   prescription?: Prescription;
@@ -136,7 +137,7 @@ interface Order {
 }
 
 function makeUid(id: number, c?: Customization) {
-  return `${id}-${c?.color ?? ''}-${c?.lensType ?? ''}-${c?.prescription ? JSON.stringify(c.prescription) : ''}`;
+  return `${id}-${c?.frameGender ?? ''}-${c?.color ?? ''}-${c?.lensType ?? ''}-${c?.prescription ? JSON.stringify(c.prescription) : ''}`;
 }
 
 function loadCart(): CartItem[] {
@@ -163,7 +164,9 @@ function BuyModal({ product, onClose, onAdd }: {
 }) {
   const couleurs = product.specifications?.couleurs ?? [];
   const canAddLens = product.category === 'eyeglasses';
+  const canChooseFrameGender = product.category === 'eyeglasses' || product.category === 'sunglasses';
 
+  const [frameGender, setFrameGender] = useState<'homme' | 'femme'>('homme');
   const [color, setColor] = useState(couleurs[0] ?? '');
   const [qty, setQty] = useState(1);
   const [addLens, setAddLens] = useState(false);
@@ -173,6 +176,7 @@ function BuyModal({ product, onClose, onAdd }: {
 
   const handleConfirm = () => {
     const customization: Customization = {};
+    if (canChooseFrameGender) customization.frameGender = frameGender;
     if (color) customization.color = color;
     if (canAddLens && addLens) {
       customization.lensType = lensType;
@@ -221,6 +225,24 @@ function BuyModal({ product, onClose, onAdd }: {
         </div>
 
         <div style={{ padding: '16px' }}>
+          {canChooseFrameGender && (
+            <div style={{ marginBottom: 18 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: NAVY, marginBottom: 10 }}>Monture pour :</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {(['homme', 'femme'] as const).map(gender => (
+                  <button key={gender} type="button" aria-pressed={frameGender === gender}
+                    onClick={() => setFrameGender(gender)}
+                    style={{ flex: 1, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13,
+                      color: frameGender === gender ? 'white' : NAVY,
+                      background: frameGender === gender ? TEAL : 'white',
+                      border: `1.5px solid ${frameGender === gender ? TEAL : '#d0e8e6'}` }}>
+                    {gender === 'homme' ? 'Homme' : 'Femme'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* color */}
           {couleurs.length > 0 && (
             <div style={{ marginBottom: 18 }}>
@@ -565,6 +587,7 @@ export default function Shop() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                       <div style={{ flex: 1 }}>
                         <p style={{ fontWeight: 700, color: NAVY, fontSize: 13 }}>{item.name}</p>
+                        {item.customization?.frameGender && <p style={{ fontSize: 11, color: '#6b8a87' }}>Monture : {item.customization.frameGender === 'homme' ? 'Homme' : 'Femme'}</p>}
                         {item.customization?.color && <p style={{ fontSize: 11, color: '#6b8a87' }}>Couleur : {item.customization.color}</p>}
                         {item.customization?.lensType && <p style={{ fontSize: 11, color: TEAL }}>Verres : {LENS_TYPES.find(l => l.id === item.customization?.lensType)?.label}</p>}
                         {pxSummary(item.customization) && <p style={{ fontSize: 10, color: '#9ab0ae', marginTop: 2 }}>{pxSummary(item.customization)}</p>}
