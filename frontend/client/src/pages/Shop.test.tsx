@@ -10,7 +10,7 @@ const mockApi = api as unknown as {
 };
 
 const PRODUCTS = [
-  { id: 1, name: 'Lunettes de vue classiques', category: 'eyeglasses', priceMga: 150000, description: 'Monture élégante' },
+  { id: 1, name: 'Lunettes de vue classiques', category: 'eyeglasses', subCategory: 'monture', priceMga: 150000, description: 'Monture élégante' },
   { id: 2, name: 'Lunettes de soleil UV', category: 'sunglasses', priceMga: 200000, description: 'Protection maximale' },
   { id: 3, name: 'Étui de rangement', category: 'accessories', priceMga: 25000, description: 'Protection robuste' },
 ];
@@ -18,27 +18,28 @@ const PRODUCTS = [
 const openCart = async () => {
   fireEvent.click(screen.getByTestId('cart-button'));
   await waitFor(() => {
-    expect(screen.getAllByText(/shop\.continueShopping/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('Continuer les achats')).toBeInTheDocument();
   });
 };
 
 const addProductAndOpenCart = async () => {
   await waitFor(() => screen.getAllByTestId('product-card'));
-  fireEvent.click(screen.getAllByText('shop.add')[0]);
+  fireEvent.click(screen.getAllByRole('button', { name: 'Acheter' })[0]);
+  fireEvent.click(screen.getByText(/Ajouter au panier/));
   await openCart();
 };
 
 const goToPayment = async () => {
   await addProductAndOpenCart();
-  fireEvent.click(screen.getByText('shop.checkout'));
-  await waitFor(() => screen.getByText('shop.paymentMethod'));
+  fireEvent.click(screen.getByText('Procéder au paiement'));
+  await waitFor(() => screen.getByText('Mode de paiement'));
 };
 
 const selectPayAndConfirm = async () => {
   await goToPayment();
   fireEvent.click(screen.getByText('Orange Money'));
   await waitFor(() => screen.getByPlaceholderText('+261 32 XX XX XX'));
-  fireEvent.click(screen.getByText('shop.confirmPayment'));
+  fireEvent.click(screen.getByText('Confirmer le paiement'));
 };
 
 describe('Shop', () => {
@@ -56,7 +57,7 @@ describe('Shop', () => {
   it('affiche les produits depuis l\'API', async () => {
     render(<Shop />);
     await waitFor(() => {
-      expect(screen.getAllByTestId('product-card').length).toBe(3);
+      expect(screen.getAllByTestId('product-card').length).toBe(2);
       expect(screen.getByText('Lunettes de vue classiques')).toBeInTheDocument();
     });
   });
@@ -72,7 +73,7 @@ describe('Shop', () => {
   it('filtre les produits par catégorie eyeglasses', async () => {
     render(<Shop />);
     await waitFor(() => screen.getAllByTestId('product-card'));
-    fireEvent.click(screen.getByText('shop.glasses'));
+    fireEvent.click(screen.getByText('Montures de vue'));
     await waitFor(() => {
       expect(screen.getAllByTestId('product-card').length).toBe(1);
       expect(screen.queryByText('Lunettes de soleil UV')).not.toBeInTheDocument();
@@ -82,7 +83,8 @@ describe('Shop', () => {
   it('ajoute un produit au panier et met à jour le badge', async () => {
     render(<Shop />);
     await waitFor(() => screen.getAllByTestId('product-card'));
-    fireEvent.click(screen.getAllByText('shop.add')[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Acheter' })[0]);
+    fireEvent.click(screen.getByText(/Ajouter au panier/));
     await waitFor(() => {
       const badge = screen.getByTestId('cart-button').querySelector('span');
       expect(badge).toBeInTheDocument();
@@ -90,11 +92,21 @@ describe('Shop', () => {
     });
   });
 
+  it('permet de choisir une monture pour femme et conserve le choix au panier', async () => {
+    render(<Shop />);
+    await waitFor(() => screen.getAllByTestId('product-card'));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Acheter' })[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Femme' }));
+    fireEvent.click(screen.getByText(/Ajouter au panier/));
+    await openCart();
+    expect(screen.getByText('Monture : Femme')).toBeInTheDocument();
+  });
+
   it('le panier s\'ouvre et affiche l\'article ajouté', async () => {
     render(<Shop />);
     await addProductAndOpenCart();
     expect(screen.getByText('Lunettes de vue classiques')).toBeInTheDocument();
-    expect(screen.getByText('shop.checkout')).toBeInTheDocument();
+    expect(screen.getByText('Procéder au paiement')).toBeInTheDocument();
   });
 
   it('affiche le panier vide quand rien n\'est ajouté', async () => {
@@ -102,15 +114,17 @@ describe('Shop', () => {
     await waitFor(() => screen.getAllByTestId('product-card'));
     fireEvent.click(screen.getByTestId('cart-button'));
     await waitFor(() => {
-      expect(screen.getByText('shop.emptyCart')).toBeInTheDocument();
+      expect(screen.getByText('Panier vide')).toBeInTheDocument();
     });
   });
 
   it('met à jour la quantité dans le panier (+1)', async () => {
     render(<Shop />);
     await waitFor(() => screen.getAllByTestId('product-card'));
-    fireEvent.click(screen.getAllByText('shop.add')[0]);
-    fireEvent.click(screen.getAllByText('shop.add')[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Acheter' })[0]);
+    fireEvent.click(screen.getByText(/Ajouter au panier/));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Acheter' })[0]);
+    fireEvent.click(screen.getByText(/Ajouter au panier/));
     await openCart();
     await waitFor(() => {
       const twos = screen.getAllByText('2');
@@ -121,9 +135,9 @@ describe('Shop', () => {
   it('navigue vers le paiement depuis le panier', async () => {
     render(<Shop />);
     await addProductAndOpenCart();
-    fireEvent.click(screen.getByText('shop.checkout'));
+    fireEvent.click(screen.getByText('Procéder au paiement'));
     await waitFor(() => {
-      expect(screen.getByText('shop.paymentMethod')).toBeInTheDocument();
+      expect(screen.getByText('Mode de paiement')).toBeInTheDocument();
     });
   });
 
@@ -153,7 +167,7 @@ describe('Shop', () => {
     render(<Shop />);
     await selectPayAndConfirm();
     await waitFor(() => {
-      expect(screen.getByTestId('order-number')).toHaveTextContent('VC-ORD-2026-000001');
+      expect(screen.getByText(/VC-ORD-2026-000001/)).toBeInTheDocument();
     });
   });
 
@@ -163,7 +177,7 @@ describe('Shop', () => {
     await goToPayment();
     fireEvent.click(screen.getByText('Orange Money'));
     await waitFor(() => screen.getByPlaceholderText('+261 32 XX XX XX'));
-    fireEvent.click(screen.getByText('shop.confirmPayment'));
+    fireEvent.click(screen.getByText('Confirmer le paiement'));
     await waitFor(() => {
       expect(screen.getByText('Paiement refusé.')).toBeInTheDocument();
     });

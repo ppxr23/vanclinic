@@ -363,7 +363,7 @@ function BuyModal({ product, onClose, onAdd }: {
 function ProductCard({ product, onBuy }: { product: Product; onBuy: () => void }) {
   const outOfStock = (product.stockQuantity ?? 1) === 0;
   return (
-    <div style={{ background: 'white', borderRadius: 12, overflow: 'hidden', border: '1px solid #e8f5f3', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+    <div data-testid="product-card" style={{ background: 'white', borderRadius: 12, overflow: 'hidden', border: '1px solid #e8f5f3', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       <div style={{ position: 'relative', width: '100%', aspectRatio: '1', background: '#f4f9f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {product.images?.[0]
           ? <img src={product.images[0]} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
