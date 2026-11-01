@@ -7,6 +7,7 @@ namespace App\Controller\Api;
 use App\Enum\UserRole;
 use App\Entity\MobileClinicSession;
 use App\Entity\Product;
+use App\Entity\User;
 use App\Enum\ProductCategory;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\AppointmentRepository;
@@ -72,6 +73,8 @@ class AdminController extends AbstractController
         return $this->json(array_map(fn($u) => [
             'id' => $u->getId(),
             'fullName' => $u->getFullName(),
+            'firstName' => $u->getFirstName(),
+            'lastName' => $u->getLastName(),
             'email' => $u->getEmail(),
             'phone' => $u->getPhone(),
             'roles' => $u->getRoles(),
@@ -79,6 +82,60 @@ class AdminController extends AbstractController
             'lastLoginAt' => $u->getLastLoginAt()?->format(\DateTimeInterface::ATOM),
             'createdAt' => $u->getCreatedAt()->format(\DateTimeInterface::ATOM),
         ], $users));
+    }
+
+    #[Route('/users/{id}', name: 'update_user', methods: ['PATCH'], requirements: ['id' => '\\d+'])]
+    #[IsGranted('ROLE_COORDINATEUR')]
+    public function updateUser(User $user, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        foreach (['firstName', 'lastName', 'email', 'phone'] as $field) {
+            if (isset($data[$field]) && is_string($data[$field])) {
+                match ($field) {
+                    'firstName' => $user->setFirstName($data[$field]),
+                    'lastName' => $user->setLastName($data[$field]),
+                    'email' => $user->setEmail($data[$field]),
+                    'phone' => $user->setPhone($data[$field]),
+                };
+            }
+        }
+
+        if (isset($data['role'])) {
+            $role = is_string($data['role']) ? UserRole::tryFrom($data['role']) : null;
+            if (!$role || $role === UserRole::PATIENT) {
+                return $this->json(['error' => 'Rôle invalide pour un compte staff'], 400);
+            }
+            $user->setRoles([$role->value]);
+        }
+
+        if (isset($data['isActive'])) {
+            if (!(bool) $data['isActive'] && $this->getUser()?->getUserIdentifier() === $user->getUserIdentifier()) {
+                return $this->json(['error' => 'Vous ne pouvez pas désactiver votre propre compte.'], 400);
+            }
+            $user->setIsActive((bool) $data['isActive']);
+        }
+
+        try {
+            $this->em->flush();
+        } catch (\Throwable $e) {
+            return $this->json(['error' => $e->getMessage()], 400);
+        }
+
+        return $this->json(['id' => $user->getId(), 'fullName' => $user->getFullName(), 'isActive' => $user->isActive()]);
+    }
+
+    #[Route('/users/{id}', name: 'deactivate_user', methods: ['DELETE'], requirements: ['id' => '\\d+'])]
+    #[IsGranted('ROLE_COORDINATEUR')]
+    public function deactivateUser(User $user): JsonResponse
+    {
+        if ($this->getUser()?->getUserIdentifier() === $user->getUserIdentifier()) {
+            return $this->json(['error' => 'Vous ne pouvez pas désactiver votre propre compte.'], 400);
+        }
+
+        $user->setIsActive(false);
+        $this->em->flush();
+
+        return $this->json(['message' => 'Utilisateur désactivé']);
     }
 
     #[Route('/users/staff', name: 'create_staff', methods: ['POST'])]
@@ -264,6 +321,55 @@ class AdminController extends AbstractController
             'priceMga' => $product->getPriceMga(),
             'stockQuantity' => $product->getStockQuantity(),
         ], 201);
+    }
+
+    #[Route('/products/{id}', name: 'update_product', methods: ['PATCH'], requirements: ['id' => '\\d+'])]
+    #[OA\Patch(summary: 'Modifier un produit')]
+    #[IsGranted('ROLE_COORDINATEUR')]
+    public function updateProduct(Product $product, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        if ((isset($data['sku']) && trim((string) $data['sku']) === '')
+            || (isset($data['name']) && trim((string) $data['name']) === '')
+            || (isset($data['priceMga']) && (int) $data['priceMga'] < 0)
+            || (isset($data['stockQuantity']) && (int) $data['stockQuantity'] < 0)) {
+            return $this->json(['error' => 'Référence, nom, prix ou stock invalide'], 400);
+        }
+        if (isset($data['category'])) {
+            $category = is_string($data['category']) ? ProductCategory::tryFrom($data['category']) : null;
+            if (!$category) {
+                return $this->json(['error' => 'Catégorie invalide'], 400);
+            }
+            $product->setCategory($category);
+        }
+
+        if (isset($data['sku'])) $product->setSku((string) $data['sku']);
+        if (isset($data['name'])) $product->setName((string) $data['name']);
+        if (array_key_exists('description', $data)) $product->setDescription($data['description'] !== null ? (string) $data['description'] : null);
+        if (array_key_exists('subCategory', $data)) $product->setSubCategory($data['subCategory'] !== null ? (string) $data['subCategory'] : null);
+        if (array_key_exists('brand', $data)) $product->setBrand($data['brand'] !== null ? (string) $data['brand'] : null);
+        if (isset($data['priceMga'])) $product->setPriceMga((int) $data['priceMga']);
+        if (isset($data['stockQuantity'])) $product->setStockQuantity((int) $data['stockQuantity']);
+        if (array_key_exists('specifications', $data)) $product->setSpecifications(is_array($data['specifications']) ? $data['specifications'] : null);
+
+        try {
+            $this->em->flush();
+        } catch (\Throwable $e) {
+            return $this->json(['error' => $e->getMessage()], 400);
+        }
+
+        return $this->json(['id' => $product->getId(), 'name' => $product->getName(), 'sku' => $product->getSku()]);
+    }
+
+    #[Route('/products/{id}', name: 'deactivate_product', methods: ['DELETE'], requirements: ['id' => '\\d+'])]
+    #[OA\Delete(summary: 'Retirer un produit du catalogue')]
+    #[IsGranted('ROLE_COORDINATEUR')]
+    public function deactivateProduct(Product $product): JsonResponse
+    {
+        $product->setIsActive(false);
+        $this->em->flush();
+
+        return $this->json(['message' => 'Produit retiré du catalogue']);
     }
 
     #[Route('/sessions', name: 'list_sessions', methods: ['GET'])]

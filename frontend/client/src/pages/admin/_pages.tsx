@@ -45,8 +45,8 @@ function fmgAmount(mga: number) {
 // ─── TYPES ─────────────────────────────────────────────────────
 type ApiPatient = { id: number; patientNumber: string; fullName: string; email: string; phone: string; city: string; district: string; gender: string; birthDate: string; isActive: boolean; appointmentCount: number; createdAt: string };
 type ApiAppointment = { id: number; patient: { id: number; patientNumber: string; fullName: string }; ophthalmologist: { id: number; fullName: string } | null; scheduledAt: string; createdAt: string; type: string; typeLabel: string; status: string; statusLabel: string; reason: string; location: string };
-type ApiUser = { id: number; fullName: string; email: string; phone: string; roles: string[]; isActive: boolean; lastLoginAt: string | null; createdAt: string };
-type ApiProduct = { id: number; sku: string; name: string; category: string; categoryLabel: string; priceMga: number; stockQuantity: number; inStock: boolean; images: string[] };
+type ApiUser = { id: number; fullName: string; firstName: string; lastName: string; email: string; phone: string; roles: string[]; isActive: boolean; lastLoginAt: string | null; createdAt: string };
+type ApiProduct = { id: number; sku: string; name: string; description?: string; subCategory?: string; brand?: string; category: string; categoryLabel: string; priceMga: number; stockQuantity: number; inStock: boolean; images: string[]; specifications?: { genre?: string; vision?: string; [key: string]: unknown } };
 type ApiOrder = { id: number; orderNumber: string; patientName: string; status: string; statusLabel: string; totalMga: number; items: { productName: string; quantity: number }[]; createdAt: string };
 type ApiDashboard = { users: { patients: number; agents: number; ophtalmologues: number }; appointments: { scheduled: number; confirmed: number; completed: number; cancelled: number }; revenue: { last_30_days_mga: number; all_time_mga: number }; inventory: { low_stock_count: number } };
 type ApiTele = { id: number; patient: { fullName: string }; requestedBy: { fullName: string }; question: string; urgency: string; status: string; createdAt: string };
@@ -657,6 +657,7 @@ export function ShopPage() {
   ];
   const { data: products, loading, error, reload } = useApi<ApiProduct[]>('/products');
   const [showModal, setShowModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ApiProduct | null>(null);
   const [imagesProduct, setImagesProduct] = useState<ApiProduct | null>(null);
   const [form, setForm] = useState({ sku: '', name: '', description: '', category: 'eyeglasses', genre: 'homme', vision: 'all', brand: '', priceMga: '', stockQuantity: '0' });
   const [saving, setSaving] = useState(false);
@@ -664,19 +665,45 @@ export function ShopPage() {
   const [deletingIdx, setDeletingIdx] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleCreate = async () => {
+  const openProductForm = (product?: ApiProduct) => {
+    setEditingProduct(product ?? null);
+    setForm(product ? {
+      sku: product.sku, name: product.name, description: product.description ?? '',
+      category: product.category, genre: product.specifications?.genre ?? 'homme',
+      vision: product.specifications?.vision ?? 'all', brand: product.brand ?? '',
+      priceMga: String(product.priceMga), stockQuantity: String(product.stockQuantity),
+    } : { sku: '', name: '', description: '', category: 'eyeglasses', genre: 'homme', vision: 'all', brand: '', priceMga: '', stockQuantity: '0' });
+    setShowModal(true);
+  };
+
+  const handleSaveProduct = async () => {
     setSaving(true);
     try {
-      const specifications = ['eyeglasses', 'sunglasses'].includes(form.category)
-        ? { genre: form.genre, ...(form.category === 'eyeglasses' && form.vision !== 'all' ? { vision: form.vision } : {}) }
-        : {};
-      await api.post('/admin/products', { ...form, specifications, priceMga: Number(form.priceMga), stockQuantity: Number(form.stockQuantity) });
+      const specifications = { ...(editingProduct?.specifications ?? {}) };
+      delete specifications.genre;
+      delete specifications.vision;
+      if (['eyeglasses', 'sunglasses'].includes(form.category)) specifications.genre = form.genre;
+      if (form.category === 'eyeglasses' && form.vision !== 'all') specifications.vision = form.vision;
+      const payload = { ...form, specifications, priceMga: Number(form.priceMga), stockQuantity: Number(form.stockQuantity) };
+      if (editingProduct) await api.patch(`/admin/products/${editingProduct.id}`, payload);
+      else await api.post('/admin/products', payload);
       setShowModal(false);
+      setEditingProduct(null);
       setForm({ sku: '', name: '', description: '', category: 'eyeglasses', genre: 'homme', vision: 'all', brand: '', priceMga: '', stockQuantity: '0' });
       reload();
     } catch (e: any) {
       alert(e.response?.data?.error || 'Erreur');
     } finally { setSaving(false); }
+  };
+
+  const handleDeleteProduct = async (product: ApiProduct) => {
+    if (!window.confirm(`Retirer « ${product.name} » de la boutique ?`)) return;
+    try {
+      await api.delete(`/admin/products/${product.id}`);
+      reload();
+    } catch (e: any) {
+      alert(e.response?.data?.error || 'Erreur lors de la suppression');
+    }
   };
 
   const handleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -714,7 +741,7 @@ export function ShopPage() {
   return (
     <div>
       <PageHeader title={t('admin.pages.shop.title')}>
-        <Btn variant="primary" onClick={() => setShowModal(true)}><Plus size={14} /> {t('admin.pages.shop.addProduct')}</Btn>
+        <Btn variant="primary" onClick={() => openProductForm()}><Plus size={14} /> {t('admin.pages.shop.addProduct')}</Btn>
       </PageHeader>
       <Grid cols={3} style={{ marginBottom: 24 }}>
         <StatCard value={String(products?.length ?? '...')} label={t('admin.pages.shop.activeProducts')} accent={TEAL} />
@@ -723,7 +750,7 @@ export function ShopPage() {
       </Grid>
       <Card>
         {loading ? <Loader /> : error ? <ErrorMsg msg={error} /> : (
-          <Table headers={[t('admin.pages.shop.colPhoto'), t('admin.pages.shop.colProduct'), t('admin.pages.shop.colRef'), t('admin.pages.shop.colCategory'), t('admin.pages.shop.colPrice'), t('admin.pages.shop.colStock'), t('admin.pages.shop.colStatus'), t('admin.pages.shop.colImages')]}>
+          <Table headers={[t('admin.pages.shop.colPhoto'), t('admin.pages.shop.colProduct'), t('admin.pages.shop.colRef'), t('admin.pages.shop.colCategory'), t('admin.pages.shop.colPrice'), t('admin.pages.shop.colStock'), t('admin.pages.shop.colStatus'), t('admin.pages.shop.colImages'), 'Actions']}>
             {(products ?? []).map(p => (
               <Tr key={p.id}>
                 <Td>
@@ -746,6 +773,12 @@ export function ShopPage() {
                     <Image size={13} /> {p.images?.length ?? 0}
                   </Btn>
                 </Td>
+                <Td>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <Btn variant="secondary" size="sm" onClick={() => openProductForm(p)}>Modifier</Btn>
+                    <Btn variant="danger" size="sm" onClick={() => handleDeleteProduct(p)}><Trash2 size={13} /> Supprimer</Btn>
+                  </div>
+                </Td>
               </Tr>
             ))}
           </Table>
@@ -754,7 +787,7 @@ export function ShopPage() {
 
       {/* Modal création produit */}
       {showModal && (
-        <Modal title={t('admin.pages.shop.modal.addTitle')} onClose={() => setShowModal(false)} onConfirm={handleCreate} confirmLabel={saving ? t('admin.pages.shop.modal.saving') : t('admin.pages.shop.modal.add')}>
+        <Modal title={editingProduct ? 'Modifier le produit' : t('admin.pages.shop.modal.addTitle')} onClose={() => { setShowModal(false); setEditingProduct(null); }} onConfirm={handleSaveProduct} confirmLabel={saving ? t('admin.pages.shop.modal.saving') : editingProduct ? 'Enregistrer' : t('admin.pages.shop.modal.add')}>
           <Grid cols={2} style={{ gap: 12 }}>
             <FormGroup label={t('admin.pages.shop.modal.sku')}><Input value={form.sku} onChange={e => setForm(f => ({ ...f, sku: e.target.value }))} placeholder="VC-LUN-003" /></FormGroup>
             <FormGroup label={t('admin.pages.shop.modal.brand')}><Input value={form.brand} onChange={e => setForm(f => ({ ...f, brand: e.target.value }))} placeholder="VanOptic" /></FormGroup>
@@ -1095,6 +1128,7 @@ export function UsersPage() {
   const { t } = useLanguage();
   const { data: users, loading, error, reload } = useApi<ApiUser[]>('/admin/users');
   const [showModal, setShowModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<ApiUser | null>(null);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', role: 'ROLE_AGENT_RELAIS', password: 'Vanclinic2025!' });
   const [saving, setSaving] = useState(false);
 
@@ -1103,15 +1137,42 @@ export function UsersPage() {
 
   const getRole = (roles: string[]) => roles.find(r => r !== 'ROLE_USER') ?? 'ROLE_USER';
 
-  const handleCreate = async () => {
+  const openUserForm = (user?: ApiUser) => {
+    setEditingUser(user ?? null);
+    setForm(user ? {
+      firstName: user.firstName, lastName: user.lastName, email: user.email, phone: user.phone,
+      role: user.roles.find(role => role !== 'ROLE_USER') ?? 'ROLE_AGENT_RELAIS', password: '',
+    } : { firstName: '', lastName: '', email: '', phone: '', role: 'ROLE_AGENT_RELAIS', password: 'Vanclinic2025!' });
+    setShowModal(true);
+  };
+
+  const handleSaveUser = async () => {
     setSaving(true);
     try {
-      await api.post('/admin/users/staff', form);
+      if (editingUser) {
+        const payload: Record<string, string> = { firstName: form.firstName, lastName: form.lastName, email: form.email, phone: form.phone };
+        if (!editingUser.roles.includes('ROLE_PATIENT')) payload.role = form.role;
+        await api.patch(`/admin/users/${editingUser.id}`, payload);
+      } else {
+        await api.post('/admin/users/staff', form);
+      }
       setShowModal(false);
+      setEditingUser(null);
       reload();
     } catch (e: any) {
       alert(e.response?.data?.error || 'Erreur');
     } finally { setSaving(false); }
+  };
+
+  const handleDeactivateUser = async (user: ApiUser) => {
+    if (!user.isActive) {
+      try { await api.patch(`/admin/users/${user.id}`, { isActive: true }); reload(); }
+      catch (e: any) { alert(e.response?.data?.error || 'Erreur lors de la réactivation'); }
+      return;
+    }
+    if (!window.confirm(`Désactiver le compte de ${user.fullName} ?`)) return;
+    try { await api.delete(`/admin/users/${user.id}`); reload(); }
+    catch (e: any) { alert(e.response?.data?.error || 'Erreur lors de la désactivation'); }
   };
 
   const staffUsers = (users ?? []).filter(u => !u.roles.includes('ROLE_PATIENT'));
@@ -1121,7 +1182,7 @@ export function UsersPage() {
   return (
     <div>
       <PageHeader title={t('admin.pages.users.title')} subtitle={`${users?.length ?? '...'} ${t('admin.pages.users.subtitle')}`}>
-        <Btn variant="primary" onClick={() => setShowModal(true)}><Plus size={14} /> {t('admin.pages.users.newUser')}</Btn>
+        <Btn variant="primary" onClick={() => openUserForm()}><Plus size={14} /> {t('admin.pages.users.newUser')}</Btn>
       </PageHeader>
       <Grid cols={4} style={{ marginBottom: 20 }}>
         {['ROLE_COORDINATEUR', 'ROLE_OPHTALMOLOGUE', 'ROLE_TECHNICIEN', 'ROLE_AGENT_RELAIS'].map(r => (
@@ -1133,7 +1194,7 @@ export function UsersPage() {
       </Grid>
       <Card>
         {loading ? <Loader /> : error ? <ErrorMsg msg={error} /> : (
-          <Table headers={[t('admin.pages.users.colUser'), t('admin.pages.users.colRole'), t('admin.pages.users.colEmail'), t('admin.pages.users.colLastLogin'), t('admin.pages.users.colStatus')]}>
+          <Table headers={[t('admin.pages.users.colUser'), t('admin.pages.users.colRole'), t('admin.pages.users.colEmail'), t('admin.pages.users.colLastLogin'), t('admin.pages.users.colStatus'), 'Actions']}>
             {(users ?? []).map(u => {
               const role = getRole(u.roles);
               const color = ROLE_COLORS[role] ?? '#ccc';
@@ -1144,6 +1205,10 @@ export function UsersPage() {
                   <Td><span style={{ color: '#6b8a87', fontSize: 12 }}>{u.email}</span></Td>
                   <Td><span style={{ color: '#6b8a87', fontSize: 12 }}>{u.lastLoginAt ? fmgDateTime(u.lastLoginAt) : t('admin.pages.users.never')}</span></Td>
                   <Td><StatusBadge status={u.isActive ? 'actif' : 'inactif'} /></Td>
+                  <Td><div style={{ display: 'flex', gap: 6 }}>
+                    <Btn variant="secondary" size="sm" onClick={() => openUserForm(u)}>Modifier</Btn>
+                    <Btn variant={u.isActive ? 'danger' : 'outline'} size="sm" onClick={() => handleDeactivateUser(u)}>{u.isActive ? 'Désactiver' : 'Réactiver'}</Btn>
+                  </div></Td>
                 </Tr>
               );
             })}
@@ -1151,22 +1216,22 @@ export function UsersPage() {
         )}
       </Card>
       {showModal && (
-        <Modal title={t('admin.pages.users.modal.title')} onClose={() => setShowModal(false)} onConfirm={handleCreate} confirmLabel={saving ? t('admin.pages.users.modal.creating') : t('admin.pages.users.modal.create')}>
+        <Modal title={editingUser ? 'Modifier utilisateur' : t('admin.pages.users.modal.title')} onClose={() => { setShowModal(false); setEditingUser(null); }} onConfirm={handleSaveUser} confirmLabel={saving ? t('admin.pages.users.modal.creating') : editingUser ? 'Enregistrer' : t('admin.pages.users.modal.create')}>
           <Grid cols={2} style={{ gap: 12 }}>
             <FormGroup label={t('admin.pages.users.modal.firstName')}><Input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} placeholder="Jean" /></FormGroup>
             <FormGroup label={t('admin.pages.users.modal.lastName')}><Input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} placeholder="Dupont" /></FormGroup>
           </Grid>
           <FormGroup label={t('admin.pages.users.modal.email')}><Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="utilisateur@vanclinic.mg" /></FormGroup>
           <FormGroup label={t('admin.pages.users.modal.phone')}><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+261 34 XX XX XX" /></FormGroup>
-          <FormGroup label={t('admin.pages.users.modal.role')}>
+          {(!editingUser || !editingUser.roles.includes('ROLE_PATIENT')) && <FormGroup label={t('admin.pages.users.modal.role')}>
             <Select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
               <option value="ROLE_AGENT_RELAIS">Agent Relais</option>
               <option value="ROLE_OPHTALMOLOGUE">Ophtalmologue</option>
               <option value="ROLE_TECHNICIEN">Technicien</option>
               <option value="ROLE_COORDINATEUR">Coordinateur</option>
             </Select>
-          </FormGroup>
-          <FormGroup label={t('admin.pages.users.modal.password')}><Input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} /></FormGroup>
+          </FormGroup>}
+          {!editingUser && <FormGroup label={t('admin.pages.users.modal.password')}><Input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} /></FormGroup>}
         </Modal>
       )}
     </div>
