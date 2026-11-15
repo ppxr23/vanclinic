@@ -19,6 +19,7 @@ use App\Repository\UserRepository;
 use App\Service\AppointmentService;
 use App\Service\AuthService;
 use App\Service\DashboardService;
+use App\Service\ConsultationPricingService;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -43,6 +44,7 @@ class AdminController extends AbstractController
         private readonly ProductRepository $productRepository,
         private readonly MobileClinicSessionRepository $sessionRepository,
         private readonly EntityManagerInterface $em,
+        private readonly ConsultationPricingService $consultationPricingService,
     ) {
     }
 
@@ -58,6 +60,25 @@ class AdminController extends AbstractController
     public function navCounts(): JsonResponse
     {
         return $this->json($this->dashboardService->getNavCounts());
+    }
+
+    #[Route('/settings/consultation-price', name: 'consultation_price', methods: ['GET', 'PUT'])]
+    #[IsGranted('ROLE_COORDINATEUR')]
+    public function consultationPrice(Request $request): JsonResponse
+    {
+        if ($request->isMethod('GET')) {
+            return $this->json(['priceMga' => $this->consultationPricingService->getPriceMga()]);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $priceMga = $data['priceMga'] ?? null;
+        if (!is_int($priceMga) || $priceMga < 0) {
+            return $this->json(['error' => 'Le tarif doit être un nombre entier positif ou nul.'], 400);
+        }
+
+        $this->consultationPricingService->setPriceMga($priceMga);
+
+        return $this->json(['priceMga' => $priceMga]);
     }
 
     #[Route('/users', name: 'list_users', methods: ['GET'])]

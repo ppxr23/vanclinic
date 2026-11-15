@@ -1286,11 +1286,47 @@ export function LogsPage() {
 // ─── SETTINGS ─────────────────────────────────────────────────
 export function SettingsPage() {
   const { t } = useLanguage();
+  const [consultationPrice, setConsultationPrice] = useState('50000');
+  const [priceLoading, setPriceLoading] = useState(true);
+  const [priceSaving, setPriceSaving] = useState(false);
+  const [priceMessage, setPriceMessage] = useState('');
+
+  useEffect(() => {
+    api.get<{ priceMga: number }>('/admin/settings/consultation-price')
+      .then(({ data }) => setConsultationPrice(String(data.priceMga)))
+      .catch((error) => setPriceMessage(error.response?.data?.error || 'Erreur de chargement'))
+      .finally(() => setPriceLoading(false));
+  }, []);
+
+  const saveConsultationPrice = async () => {
+    setPriceSaving(true);
+    setPriceMessage('');
+    try {
+      const { data } = await api.put<{ priceMga: number }>('/admin/settings/consultation-price', { priceMga: Number(consultationPrice) });
+      setConsultationPrice(String(data.priceMga));
+      setPriceMessage(t('admin.pages.settings.priceSaved'));
+    } catch (error: any) {
+      setPriceMessage(error.response?.data?.error || 'Erreur lors de l\'enregistrement');
+    } finally {
+      setPriceSaving(false);
+    }
+  };
+
   return (
     <div>
       <PageHeader title={t('admin.nav.settings')} />
       <Grid cols={2}>
         <div>
+          <Card style={{ marginBottom: 16 }}>
+            <div style={{ fontWeight: 700, color: NAVY, marginBottom: 16 }}>{t('admin.pages.settings.consultationPricing')}</div>
+            <FormGroup label={t('admin.pages.settings.consultationPrice')}>
+              <Input type="number" min="0" step="1" value={consultationPrice} disabled={priceLoading || priceSaving} onChange={event => setConsultationPrice(event.target.value)} />
+            </FormGroup>
+            <Btn variant="primary" onClick={saveConsultationPrice} disabled={priceLoading || priceSaving || consultationPrice === '' || Number(consultationPrice) < 0 || !Number.isInteger(Number(consultationPrice))}>
+              {priceSaving ? t('common.saving') : t('admin.pages.settings.saveBtn')}
+            </Btn>
+            {priceMessage && <p role="status" style={{ marginTop: 10, fontSize: 12, color: priceMessage === t('admin.pages.settings.priceSaved') ? TEAL : '#c53030' }}>{priceMessage}</p>}
+          </Card>
           <Card style={{ marginBottom: 16 }}>
             <div style={{ fontWeight: 700, color: NAVY, marginBottom: 16 }}>{t('admin.pages.settings.platform')}</div>
             <FormGroup label={t('admin.pages.settings.orgName')}><Input defaultValue="VanClinic Madagascar" /></FormGroup>

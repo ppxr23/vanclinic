@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Repository\AppointmentRepository;
 use App\Repository\PatientRepository;
 use App\Service\AppointmentService;
+use App\Service\ConsultationPricingService;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,7 +28,15 @@ class AppointmentController extends AbstractController
         private readonly AppointmentService $appointmentService,
         private readonly AppointmentRepository $appointmentRepository,
         private readonly PatientRepository $patientRepository,
+        private readonly ConsultationPricingService $consultationPricingService,
     ) {
+    }
+
+    #[Route('/consultation-price', name: 'consultation_price', methods: ['GET'])]
+    #[OA\Get(summary: 'Tarif de la consultation ophtalmologique')]
+    public function consultationPrice(): JsonResponse
+    {
+        return $this->json(['priceMga' => $this->consultationPricingService->getPriceMga()]);
     }
 
     #[Route('', name: 'list', methods: ['GET'])]

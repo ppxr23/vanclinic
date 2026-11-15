@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { translations } from '@/i18n/translations';
+import { translations } from '@/contexts/translations';
 
 type Language = 'fr' | 'mg';
 

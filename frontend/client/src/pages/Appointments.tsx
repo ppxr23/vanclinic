@@ -35,19 +35,20 @@ export default function Appointments() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [confirmationNumber, setConfirmationNumber] = useState('');
+  const [consultationPrice, setConsultationPrice] = useState(50000);
 
   useEffect(() => {
     api.get<Appointment[]>('/appointments')
       .then(r => setAppointments(r.data))
       .catch(() => {})
       .finally(() => setLoadingList(false));
+    api.get<{ priceMga: number }>('/appointments/consultation-price')
+      .then(({ data }) => setConsultationPrice(data.priceMga))
+      .catch(() => {});
   }, []);
 
   const types = [
-    { id: 'on_site', name: t('appointments.generalConsultation'), duration: '30 min', price: '50 000 Ar' },
-    { id: 'on_site_eye', name: t('appointments.eyeExam'), duration: '45 min', price: '75 000 Ar' },
-    { id: 'follow_up', name: t('appointments.followUp'), duration: '20 min', price: '30 000 Ar' },
-    { id: 'screening', name: t('appointments.surgery'), duration: '2h', price: 'Sur devis' },
+    { id: 'on_site', name: t('appointments.eyeExam'), duration: '30 min', price: `${consultationPrice.toLocaleString('fr-FR')} Ar` },
   ];
 
   const today = new Date();
@@ -73,7 +74,7 @@ export default function Appointments() {
       setError('');
       try {
         const scheduledAt = `${selectedDate}T${selectedTime}:00`;
-        const apiType = selectedType.replace('_eye', '');
+        const apiType = selectedType;
         const reason = types.find(tp => tp.id === selectedType)?.name ?? '';
         const { data } = await api.post<{ appointment?: { id: number } }>('/appointments', {
           scheduledAt,
